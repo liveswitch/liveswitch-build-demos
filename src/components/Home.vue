@@ -8,11 +8,11 @@
           <div style="color: white; width: fit-content;float: left;" class="margin"><h2>Preview</h2></div>
         </v-row>
         <v-row style="border-radius: 5px; width: fit-content;float: right; position: relative;">
-          <v-img height="417px" width="627px" src="@/assets/headshot.jpeg" style="margin: 0 25px 0 0;"/>
-          <span style="background-color: #03011d; opacity: 60%;position: absolute; bottom: 0; width: 627px; height: fit-content;">
+          <v-img height="417px" width="627px" src="@/assets/headshot.jpeg" style="margin: 0 25px 0 0; border-radius: 15px;"/>
+          <span style="background-color: #03011d; opacity: 60%;position: absolute; bottom: 0; width: 627px; height: fit-content; border-radius: 0 0 15px 15px;">
             <div class="center">
-            <v-btn class="margin"  icon="icon-user-background-blur" style="opacity: 100%;">C</v-btn>
-            <v-btn class="margin"  icon="icon-user-background-blur" style="opacity: 100%;">M</v-btn>
+              <i class="icon-video margin" style="color: white; font-size: 40px;"/>
+              <i class="icon-audio-mic margin" style="color: white; font-size: 40px;"/>
           </div>
           </span>
         </v-row>
@@ -36,7 +36,9 @@
                 class="margin"
                 hide-details="auto"
               ></v-select>
-              <v-btn class="margin"  icon="icon-user-background-blur">C</v-btn>
+              <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 24px;">
+                <i class="center icon-video"/>
+              </v-btn>
             </v-row>
             <v-row>
             <v-select
@@ -45,8 +47,8 @@
               class="margin"
               hide-details="auto"
             ></v-select>
-            <v-btn class="margin" icon="icon-user-background-blur">
-              M
+            <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 24px;">
+              <i class="center icon-audio-mic"/>
             </v-btn>
             </v-row>
             <v-row>
@@ -58,7 +60,7 @@
               ></v-select>
             </v-row>
             <v-row>
-              <v-btn class="margin center" @click="joinCall">Join</v-btn>
+              <v-btn class="margin center" style="color: white; background-color: blue;" @click="joinCall">Join</v-btn>
             </v-row>
           </v-col>
         </v-row>
@@ -74,12 +76,11 @@
   const router = useRouter();
 
   function joinCall() {
-    // debugger;
     router.push('/inCall');
   }
 </script>
 
-<style>
+<style scoped>
   .margin {
     margin: 5px 10px 5px 10px;
   }
@@ -96,5 +97,17 @@
   .logo {
     height: 67px;
     margin: 25px;
+  }
+  i.center {
+    margin-left: -7px;
+  }
+  .video-preview {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex: 1;
+    background-color: #000;
+    border-radius: 15px;
   }
 </style>

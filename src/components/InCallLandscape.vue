@@ -9,13 +9,13 @@
                             <v-row>
                                 <v-col style="flex-grow: 0;margin: 10px;">
                                     <v-row>
-                                        <div style="border-radius: 5px; width: 275px;float: right; position: relative;margin-bottom: 10px;">
-                                            <v-img height="250px" width="275px" src="@/assets/headshot.jpeg" style="margin: 0 25px 0 0;" cover/>
+                                        <div style="border-radius: 5px; width: 280px;float: right; position: relative;margin-bottom: 10px;">
+                                            <v-img height="250px" width="280px" cover src="@/assets/headshot.jpeg" style="margin: 0 25px 0 0;"/>
                                             <span style="background-color: #03011d; opacity: 60%;position: absolute; bottom: 0; width: 100%; height: fit-content;display: flex;">
-                                                <v-switch label="Pin" style="color: white;" hide-details="auto"></v-switch>
+                                                <v-switch label="Pin" color="blue" style="color: white;" hide-details="auto"></v-switch>
                                                 <div class="center">
-                                                    <v-btn class="margin"  icon="icon-user-background-blur" style="opacity: 100%;">C</v-btn>
-                                                    <v-btn class="margin"  icon="icon-user-background-blur" style="opacity: 100%;">M</v-btn>
+                                                    <i class="icon-video margin" style="color: white; font-size: 40px;"/>
+                                                    <i class="icon-audio-mic margin" style="color: white; font-size: 40px;"/>   
                                                 </div>
                                                 <v-btn class="margin vcenter">Me</v-btn>
                                             </span>
@@ -24,26 +24,40 @@
                                 </v-col>
                                 <v-col style="flex-grow: 0; margin: 10px;">
                                     <v-row>
-                                        <div style="border-radius: 5px; width: 275px;float: right; position: relative;margin-bottom: 10px;">
-                                            <v-img height="250px" width="275px" src="@/assets/headshot.jpeg" style="margin: 0 25px 0 0;" cover/>
+                                        <div style="border-radius: 5px; width: 280px;float: right; position: relative;margin-bottom: 10px;">
+                                            <v-img height="250px" width="280px" cover src="@/assets/headshot.jpeg" style="margin: 0 25px 0 0;"/>
                                             <span style="background-color: #03011d; opacity: 60%;position: absolute; bottom: 0; width: 100%; height: fit-content;display: flex;">
-                                                <div class="center">
-                                                    <v-btn class="margin"  icon="icon-user-background-blur" style="opacity: 100%;">C</v-btn>
-                                                    <v-btn class="margin"  icon="icon-user-background-blur" style="opacity: 100%;">M</v-btn>
+                                                <div class="center" style="margin-left: auto;">
+                                                    <i class="icon-video margin" style="color: white; font-size: 40px;"/>
+                                                    <i class="icon-audio-mic margin" style="color: white; font-size: 40px;"/>   
                                                 </div>
-                                                <v-btn class="margin vcenter">Me</v-btn>
+                                                <v-btn class="margin vcenter">User 2</v-btn>
                                             </span>
                                         </div>
                                     </v-row>
                                 </v-col>
                             </v-row>
                             <v-row>
-                                <span style="color: white;margin-right: auto;" class="vcenter">4</span>
-                                <v-btn icon="test" style="margin-right: 25px;">P</v-btn>
-                                <v-btn icon="test">SC</v-btn>
-                                <v-btn icon="test">V</v-btn>
-                                <v-btn icon="test">M</v-btn>
-                                <v-btn icon="test" style="margin-right: auto; margin-left: 25px;">N</v-btn>
+
+                                <span style="float: left;color: white; font-size: 24px; margin-right: auto;">
+                                    <i class="icon-users" style="color: white; font-size: 28px;"/>
+                                    4
+                                </span>
+                                <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;margin-right: auto;height: 40px; width: 40px;">
+                                    <i class="center icon-caret-left-md"/>
+                                </v-btn>
+                                <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;height: 40px; width: 40px;">
+                                    <i class="center icon-flip-camera"/>
+                                </v-btn>
+                                <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;height: 40px; width: 40px;">
+                                    <i class="center icon-video"/>
+                                </v-btn>
+                                <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;height: 40px; width: 40px;">
+                                    <i class="center icon-audio-mic"/>
+                                </v-btn>
+                                <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;margin-left: auto;height: 40px; width: 40px; margin-right: auto;">
+                                    <i class="center icon-caret-right-md"/>
+                                </v-btn>
                             </v-row>
                         </v-col>
                     </v-row>
@@ -74,7 +88,9 @@
             <v-row>
                 <v-menu :close-on-content-click="false" location="left">
                     <template v-slot:activator="{props}">
-                        <v-btn icon="text" class="center" v-bind="props">G</v-btn>
+                        <v-btn class="margin center" v-bind="props" icon style="color: white; background-color: #323b4b;font-size: 28px;" flat>
+                            <i class="center icon-cog-gear"/>
+                        </v-btn>
                     </template>
                     <v-card min-width="300" style="margin: 5px;">
                         <v-list>
@@ -107,26 +123,37 @@
                 </v-menu>
             </v-row>
             <v-row>
-                <v-btn icon="test" class="center" @click="switchTab('CHAT')">C</v-btn>
+                <v-btn icon class="center" style="color: white; background-color: #323b4b; font-size: 28px;" flat @click="switchTab('CHAT')">
+                    <i class="center icon-chat"/>
+                </v-btn>
             </v-row>
             <v-row>
-                <v-btn icon="test" class="center" @click="switchTab('GALLERY')">V</v-btn>
+                <v-btn icon class="center" style="color: white; background-color: #323b4b; font-size: 28px;" flat @click="switchTab('GALLERY')">
+                    <i class="center icon-video"/>
+                </v-btn>
             </v-row>
             <v-row>
-                <v-btn icon="test" style="color: white;background-color: red;" class="center">X</v-btn>
+                <v-btn style="color: white;background-color: red;" class="center" @click="leaveCall">Leave</v-btn>
             </v-row>
         </v-col>
     </v-container>
 </template>
 
 <script lang="ts" setup>
-import { Ref,ref } from "vue";
+    import { Ref,ref } from "vue";
+    import { useRouter } from "vue-router";
 
-const tabView: Ref<String> = ref("GALLERY");
+    const router = useRouter();
 
-function switchTab(value: String) {
-    tabView.value = value
-}
+    function leaveCall() {
+        router.push('/');
+    }
+
+    const tabView: Ref<String> = ref("GALLERY");
+
+    function switchTab(value: String) {
+        tabView.value = value
+    }
 </script>
 
 <style>
