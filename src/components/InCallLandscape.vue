@@ -1,147 +1,113 @@
 <template>
-    <v-container style="display: flex;">
-        <v-col>
-            <v-row>
+    <div style="display: flex; margin: 10px;">
+        <div>
                 <!-- gallery view -->
-                <v-col v-if="tabView == 'GALLERY'">
-                    <v-row style="width: 600px; height: 340px;">
-                        <v-col>
-                            <v-row>
-                                <v-col style="flex-grow: 0;margin: 10px;">
-                                    <v-row>
-                                        <div style="border-radius: 5px; width: 280px;float: right; position: relative;margin-bottom: 10px;">
-                                            <v-img height="250px" width="280px" cover src="@/assets/headshot.jpeg" style="margin: 0 25px 0 0;"/>
-                                            <span style="background-color: #03011d; opacity: 60%;position: absolute; bottom: 0; width: 100%; height: fit-content;display: flex;">
-                                                <v-switch label="Pin" color="blue" style="color: white;" hide-details="auto"></v-switch>
-                                                <div class="center">
-                                                    <i class="icon-video margin" style="color: white; font-size: 40px;"/>
-                                                    <i class="icon-audio-mic margin" style="color: white; font-size: 40px;"/>   
-                                                </div>
-                                                <v-btn class="margin vcenter">Me</v-btn>
-                                            </span>
-                                        </div>
-                                    </v-row>
-                                </v-col>
-                                <v-col style="flex-grow: 0; margin: 10px;">
-                                    <v-row>
-                                        <div style="border-radius: 5px; width: 280px;float: right; position: relative;margin-bottom: 10px;">
-                                            <v-img height="250px" width="280px" cover src="@/assets/headshot.jpeg" style="margin: 0 25px 0 0;"/>
-                                            <span style="background-color: #03011d; opacity: 60%;position: absolute; bottom: 0; width: 100%; height: fit-content;display: flex;">
-                                                <div class="center" style="margin-left: auto;">
-                                                    <i class="icon-video margin" style="color: white; font-size: 40px;"/>
-                                                    <i class="icon-audio-mic margin" style="color: white; font-size: 40px;"/>   
-                                                </div>
-                                                <v-btn class="margin vcenter">User 2</v-btn>
-                                            </span>
-                                        </div>
-                                    </v-row>
-                                </v-col>
-                            </v-row>
-                            <v-row>
-
-                                <span style="float: left;color: white; font-size: 24px; margin-right: auto;">
-                                    <i class="icon-users" style="color: white; font-size: 28px;"/>
-                                    4
-                                </span>
-                                <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;margin-right: auto;height: 40px; width: 40px;">
-                                    <i class="center icon-caret-left-md"/>
-                                </v-btn>
-                                <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;height: 40px; width: 40px;">
-                                    <i class="center icon-flip-camera"/>
-                                </v-btn>
-                                <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;height: 40px; width: 40px;">
-                                    <i class="center icon-video"/>
-                                </v-btn>
-                                <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;height: 40px; width: 40px;">
-                                    <i class="center icon-audio-mic"/>
-                                </v-btn>
-                                <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;margin-left: auto;height: 40px; width: 40px; margin-right: auto;">
-                                    <i class="center icon-caret-right-md"/>
-                                </v-btn>
-                            </v-row>
-                        </v-col>
-                    </v-row>
-                </v-col>
-                <!-- chat view -->
-                <v-col v-else>
-                    <v-row style="width: 600px; height: 330px;background-color: white; border-radius: 5px;">
-                        <v-col>
-                            <v-row style="border-bottom: 3px solid black;">
-                                <h3>Chat</h3>
-                            </v-row>
-                            <v-row style="height: 240px;">
-
-                            </v-row>
-                            <v-row>
-                                <v-text-field style="margin-left: 10px; margin-right: 5px;">Enter Text</v-text-field>
-                                <v-btn style="margin: 5px;">Send</v-btn>
-                            </v-row>
-                        </v-col>
-                    </v-row>
-                </v-col>
-            </v-row>
-        </v-col>
-        <v-col>
-            <v-row>
-                <v-img src="@/assets/logoSmall.png" class="logo"/>
-            </v-row>
-            <v-row>
-                <v-menu :close-on-content-click="false" location="left">
-                    <template v-slot:activator="{props}">
-                        <v-btn class="margin center" v-bind="props" icon style="color: white; background-color: #323b4b;font-size: 28px;" flat>
-                            <i class="center icon-cog-gear"/>
-                        </v-btn>
-                    </template>
-                    <v-card min-width="300" style="margin: 5px;">
-                        <v-list>
-                            <v-list-item>
-                                <h3>Settings</h3>
-                            </v-list-item>
-                            <v-list-item>
-                                <v-select
-                                    label="Camera"
-                                    style="width:275px; flex: 0 1 auto;"
-                                    class="margin"
-                                    hide-details="auto"></v-select>
-                            </v-list-item>
-                            <v-list-item>
-                                <v-select
-                                    label="Microphone"
-                                    style="width:275px; flex: 0 1 auto;"
-                                    class="margin"
-                                    hide-details="auto"></v-select>
-                            </v-list-item>
-                            <v-list-item>
-                                <v-select
-                                    label="Speaker"
-                                    style="width:275px; flex: 0 1 auto;"
-                                    class="margin"
-                                    hide-details="auto"></v-select>
-                            </v-list-item>
-                        </v-list>
-                    </v-card>
-                </v-menu>
-            </v-row>
-            <v-row>
-                <v-btn icon class="center" style="color: white; background-color: #323b4b; font-size: 28px;" flat @click="switchTab('CHAT')">
-                    <i class="center icon-chat"/>
-                </v-btn>
-            </v-row>
-            <v-row>
-                <v-btn icon class="center" style="color: white; background-color: #323b4b; font-size: 28px;" flat @click="switchTab('GALLERY')">
-                    <i class="center icon-video"/>
-                </v-btn>
-            </v-row>
-            <v-row>
-                <v-btn style="color: white;background-color: red;" class="center" @click="leaveCall">Leave</v-btn>
-            </v-row>
-        </v-col>
-    </v-container>
+            <div v-if="tabView == 'GALLERY'" style="width: 600px; height: 340px;">
+                <div style="display: flex; flex-direction: row; justify-content: space-around; margin: 10px 10px 0px 10px;">
+                    <div>
+                        <Video
+                            :userCount=2
+                            ask-height="265px"
+                            ask-width="280px"
+                            userName="Me"></Video>
+                    </div>
+                    <div>
+                        <Video
+                            :userCount=2
+                            ask-height="265px"
+                            ask-width="280px"
+                            userName="User 2"></Video>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: row; position: absolute; bottom: 30px; width: 100%">
+                    <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;margin-right: auto;height: 40px; width: 40px;">
+                        <i class="center icon-caret-left-md"/>
+                    </v-btn>
+                    <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;height: 40px; width: 40px;">
+                        <i class="center icon-flip-camera"/>
+                    </v-btn>
+                    <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;height: 40px; width: 40px;">
+                        <i class="center icon-video"/>
+                    </v-btn>
+                    <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;height: 40px; width: 40px;">
+                        <i class="center icon-audio-mic"/>
+                    </v-btn>
+                    <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 28px;margin-left: auto;height: 40px; width: 40px; margin-right: auto;">
+                        <i class="center icon-caret-right-md"/>
+                    </v-btn>
+                </div>
+            </div>
+            <!-- chat view -->
+            <div v-else>
+                <div style="width: 600px; height: 330px;background-color: white; border-radius: 5px; margin-right: 10px;">
+                        <div style="border-bottom: 3px solid black;">
+                            <h3>Chat</h3>
+                        </div>
+                        <div style="height: 240px;">
+                        </div>
+                        <div style="display: flex;">
+                            <v-text-field style="margin-left: 10px; margin-right: 5px;">Enter Text</v-text-field>
+                            <v-btn style="margin: 5px;">Send</v-btn>
+                        </div>
+                </div>
+            </div>
+        </div>
+        <div style="display: flex; flex-flow: column wrap; justify-content: space-between; align-content: center;">
+            <v-img src="@/assets/logoSmall.png" class="logo"/>
+            <span style="float: left;color: white; font-size: 24px;" class="center">
+                <i class="icon-users" style="color: white; font-size: 28px;"/>
+                4
+            </span>
+            <v-menu :close-on-content-click="false" location="left">
+                <template v-slot:activator="{props}">
+                    <v-btn class="margin center" v-bind="props" icon style="color: white; background-color: #323b4b;font-size: 28px;" flat>
+                        <i class="center icon-cog-gear"/>
+                    </v-btn>
+                </template>
+                <v-card min-width="300" style="margin: 5px;">
+                    <v-list>
+                        <v-list-item>
+                            <h3>Settings</h3>
+                        </v-list-item>
+                        <v-list-item>
+                            <v-select
+                                label="Camera"
+                                style="width:275px; flex: 0 1 auto;"
+                                class="margin"
+                                hide-details="auto"></v-select>
+                        </v-list-item>
+                        <v-list-item>
+                            <v-select
+                                label="Microphone"
+                                style="width:275px; flex: 0 1 auto;"
+                                class="margin"
+                                hide-details="auto"></v-select>
+                        </v-list-item>
+                        <v-list-item>
+                            <v-select
+                                label="Speaker"
+                                style="width:275px; flex: 0 1 auto;"
+                                class="margin"
+                                hide-details="auto"></v-select>
+                        </v-list-item>
+                    </v-list>
+                </v-card>
+            </v-menu>
+            <v-btn icon class="center" style="color: white; background-color: #323b4b; font-size: 28px;" flat @click="switchTab('CHAT')">
+                <i class="center icon-chat"/>
+            </v-btn>
+            <v-btn icon class="center" style="color: white; background-color: #323b4b; font-size: 28px;" flat @click="switchTab('GALLERY')">
+                <i class="center icon-video"/>
+            </v-btn>
+            <v-btn style="color: white;background-color: red; margin-bottom: 20px;" class="center" @click="leaveCall">Leave</v-btn>
+        </div>
+    </div>
 </template>
 
 <script lang="ts" setup>
     import { Ref,ref } from "vue";
     import { useRouter } from "vue-router";
+    import Video from "./Video.vue"
 
     const router = useRouter();
 
@@ -165,6 +131,11 @@
         margin-right: auto;
         width: fit-content;
     }
+    span.center {
+        margin-left: auto;
+        margin-right: auto;
+        width: fit-content;
+    }
     button.center {
         margin-left: auto;
         margin-right: auto;
@@ -174,13 +145,13 @@
     }
     .logo {
         height: 40px;
-        margin: 25px;
+        flex-grow: 0;
     }
     .vcenter {
         margin-top: auto;
         margin-bottom: auto;
     }
-    .activeTab {
-        font-weight: bold;
+    i.center {
+        margin-left: -7px;
     }
   </style>
