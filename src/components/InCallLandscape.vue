@@ -156,7 +156,7 @@
     }
 </script>
 
-<style>
+<style scoped>
     .margin {
         margin: 5px;
     }

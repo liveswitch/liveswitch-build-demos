@@ -8,15 +8,17 @@
                 <i class="icon-audio-mic margin icon"/>
             </div>
         </div>
-        <div class="video-overlay" style="justify-content: end;">
-            <v-switch class="margin vcenter" label="Pin" color="blue" style="color: white;" v-if="userName == 'Me'"></v-switch>
-            <v-btn class="margin vcenter" v-if="userName">{{userName}}</v-btn>
+        <div class="video-overlay" :style="pinStyle">
+            <v-switch class="margin pin-switch" label="Pin" color="blue" style="color: white;" v-if="userName == 'Me'" hide-details="auto"></v-switch>
+            <v-btn class="display-label" :style="labelStyle" v-if="userName">{{userName}}</v-btn>
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
-    import { type PropType, ref, onMounted, computed, getCurrentInstance, watch, onUnmounted } from "vue";
+    import { StyleValue } from "vue";
+    import { useDisplay } from 'vuetify'
+    
     const props = defineProps({
 		userName: {
 			type: String,
@@ -33,10 +35,18 @@
 	});
     var calcHeight = props.askHeight || "375px"
     var calcWidth = props.askWidth || "640px"
+
+    const { mobile } = useDisplay();
+
+    const pinStyle : StyleValue = props.userName === 'Me' ? "justify-content: space-between;" : "justify-content: end;"
+    const labelStyle : StyleValue = mobile && props.userName === 'Me' ? "margin-top: 14px;" : ""
     
 </script>
 
 <style lang="scss" scoped>
+    .margin {
+        margin: 0px 5px;
+    }
     .video-controls {
 		position: absolute;
 		bottom: 0;
@@ -57,7 +67,8 @@
     }
     .video-overlay {
         display: flex;
-        flex-direction: row;
+        flex-flow: row wrap;
+        align-content: center;
         position: absolute;
         bottom: 0;
         width: 100%;
@@ -68,10 +79,22 @@
         color: white;
         font-size: 40px;
     }
+    .pin-switch {
+        flex-grow: 0;
+    }
     @media (max-width: 600px) or (max-height: 1000px) {
         .icon {
             color: white;
             font-size: 28px;
         }
+        .pin-switch {
+            flex-grow: 0;
+            align-content: center;
+        }
+        button.display-label {
+            height: 80%;
+            border-radius: 15px;
+            margin-right: 10px;
+        }   
     }
 </style>
