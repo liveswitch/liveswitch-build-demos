@@ -1,11 +1,11 @@
 <template>
     <div class="video-wrapper" :style="{height: calcHeight, width: calcWidth}">
-        <v-img class="video" cover src="@/assets/headshot.jpeg" :style="{height: calcHeight, width: calcWidth}"/>
+        <!-- <v-img class="video" cover src="@/assets/headshot.jpeg" :style="{height: calcHeight, width: calcWidth}"/> -->
         <div class="video-overlay" style="background-color: #03011d; opacity: 60%;"></div>
         <div class="video-overlay" style="justify-content: center;">
             <div class="video-controls">
-                <i class="icon-video margin icon"/>
-                <i class="icon-audio-mic margin icon"/>
+                <i class="margin icon" :class="cameraMuted ? 'icon-video-slash' : 'icon-video'"/>
+                <i class="margin icon"  :class="micMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
             </div>
         </div>
         <div class="video-overlay" :style="pinStyle">
@@ -16,12 +16,14 @@
 </template>
 
 <script lang="ts" setup>
-    import { StyleValue } from "vue";
+    import { StyleValue, toRef, watch } from "vue";
     import { useDisplay } from 'vuetify'
+    import ls from 'fm.liveswitch'
+import { onMounted } from "vue";
     
     const props = defineProps({
 		userName: {
-			type: String,
+			type: String
 		},
         userCount: {
             type: Number
@@ -31,8 +33,18 @@
         },
         askWidth: {
             type: String
+        },
+        video : {
+            type: ls.LocalMedia
+        },
+        cameraMuted: {
+            type: Boolean
+        },
+        micMuted: {
+            type: Boolean
         }
 	});
+    const localMedia = toRef(props, 'video');
     var calcHeight = props.askHeight || "375px"
     var calcWidth = props.askWidth || "640px"
 
@@ -40,10 +52,28 @@
 
     const pinStyle : StyleValue = props.userName === 'Me' ? "justify-content: space-between;" : "justify-content: end;"
     const labelStyle : StyleValue = mobile && props.userName === 'Me' ? "margin-top: 14px;" : ""
-    
+
+    watch(localMedia, async () => {
+        insertVideo()
+    })
+        
+    const insertVideo = function () {
+        const videoContainer = document.getElementsByClassName("video-wrapper");
+        if (videoContainer && videoContainer[0] && localMedia.value) {
+            let videoNode = localMedia.value.getView();
+            let firstChild = videoContainer[0].childNodes[1]
+            videoContainer[0].insertBefore(videoNode, firstChild)
+        }
+    }
+
+    onMounted(() => {
+        insertVideo()
+    })
+
+
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
     .margin {
         margin: 0px 5px;
     }
@@ -81,6 +111,16 @@
     }
     .pin-switch {
         flex-grow: 0;
+    }
+    div.fm-video {
+        width: 640px !important;
+        height: 375px !important;
+    }
+    video {
+        width: 640px !important;
+        height: 375px !important;
+        object-fit: cover !important;
+        border-radius: 15px;
     }
     @media (max-width: 600px) or (max-height: 1000px) {
         .icon {

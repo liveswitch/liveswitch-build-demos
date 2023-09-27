@@ -13,10 +13,17 @@
             </div>
             <div class="video-grid">
                 <Video
+                v-if="upstreamConnection"
+                style="margin: 5px;"
+                :userCount="userCount"
+                :video="store.state.localMedia"
+                userName="Me"> </Video>
+                <!-- <Video
+                v-if="downstreamConnections"
                 style="margin: 5px;"
                 :userCount="userCount"
                 v-for="video in videos"
-                :userName=video> </Video>
+                :userName=video> </Video> -->
             </div>
         </div>
         <div style="width: 400px; padding-top: 125px;">
@@ -74,10 +81,24 @@
 </template>
   
 <script lang="ts" setup>
-    import { Ref,ref } from "vue";
+    import { Ref,ref,onMounted } from "vue";
     import { useDisplay } from 'vuetify'
     import { useRouter } from "vue-router";
     import Video from "./Video.vue"
+    import { useStore } from 'vuex'
+    import ls from 'fm.liveswitch'
+    import config from '../../liveswitch_config.json'
+
+    const store = useStore();
+    console.log(store.state);
+
+    let upstreamConnection: Ref<ls.SfuUpstreamConnection | undefined> = ref(undefined);
+    let channel: ls.Channel | null = null;
+    let client : ls.Client | null = null;
+
+    let downstreamConnections: { [id: string] : ls.SfuDownstreamConnection; } = {};
+
+    let layoutManager : ls.DomLayoutManager |  null = null;
 
     const router = useRouter();
 
@@ -91,6 +112,130 @@
 
     const videos : string[] = ['Me', 'User 2', 'User 3', 'User 4'];
     var userCount : Ref<number> = ref(videos.length);
+
+    onMounted(async () => {
+        const media = store.state.localMedia;
+        
+        await joinAsync();
+        const videoContainer = document.getElementById("home");
+        if (videoContainer && media) {
+            layoutManager = new ls.DomLayoutManager(videoContainer);
+            layoutManager.setLocalView(media.getView());
+        }
+    })
+
+    async function joinAsync (this: any) {
+            const promise = new ls.Promise();
+
+            // Create a client.
+            client = new ls.Client(config.gatewayUrl, config.applicationId);
+
+            // Generate a token (do this on the server to avoid exposing your shared secret).
+            const token = ls.Token.generateClientRegisterToken(
+                config.applicationId,
+                client.getUserId(),
+                client.getDeviceId(),
+                client.getId(),
+                [new ls.ChannelClaim(store.state.channelId)],
+                config.sharedSecret
+            );
+
+            // Register client with token.
+            client
+                .register(token)
+                .then((channels: any) => {
+                    onClientRegistered(channels);
+                    promise.resolve(null);
+                })
+                .fail((ex: any) => {
+                    ls.Log.error("Failed to register with Gateway.");
+                    promise.reject(ex);
+                });
+
+            return promise;
+        };
+
+        function onClientRegistered (this: any, channels: any) {
+            // Store our channel reference.
+            channel = channels[0];
+
+            // Open a new SFU upstream connection.
+            upstreamConnection.value = openSfuUpstreamConnection(store.state.localMedia);
+
+            if (channel) {
+            // Open a new SFU downstream connection when a remote upstream connection is opened.
+                channel.addOnRemoteUpstreamConnectionOpen((remoteConnectionInfo) =>
+                    openSfuDownstreamConnection(remoteConnectionInfo, channel)
+                );
+            }
+        };
+
+        function openSfuDownstreamConnection (remoteConnectionInfo: any, channel: ls.Channel | null) {
+            // Create remote media.
+            const remoteMedia = new ls.RemoteMedia();
+            const audioStream = new ls.AudioStream(remoteMedia);
+            const videoStream = new ls.VideoStream(remoteMedia);
+
+            if (layoutManager) {
+                // Add remote media to the layout.
+                layoutManager.addRemoteMedia(remoteMedia);
+            }
+
+            if (channel) {
+                // Create a SFU downstream connection with remote audio and video.
+                const connection = channel.createSfuDownstreamConnection(
+                    remoteConnectionInfo,
+                    audioStream,
+                    videoStream
+                );
+
+                // Store the downstream connection.
+                downstreamConnections[connection.getId()] = connection;
+
+                connection.addOnStateChange((conn) => {
+                    // Remove the remote media from the layout and destroy it if the remote is closed.
+                    if (conn.getRemoteClosed()) {
+                        delete downstreamConnections[connection.getId()];
+                        if (layoutManager) {
+                            layoutManager.removeRemoteMedia(remoteMedia);
+                        }
+                        remoteMedia.destroy();
+                    }
+                });
+
+                connection.open();
+                return connection;
+            }
+        };
+
+        function openSfuUpstreamConnection (localMedia: ls.LocalMedia) {
+            // Create audio and video streams from local media.
+            const audioStream = new ls.AudioStream(localMedia);
+            const videoStream = new ls.VideoStream(localMedia);
+
+            if (!channel) {
+                return;
+            }
+
+            // Create a SFU upstream connection with local audio and video.
+            const connection = channel.createSfuUpstreamConnection(
+                audioStream,
+                videoStream
+            );
+
+            connection.addOnStateChange((conn) => {
+                ls.Log.debug(
+                    `Upstream connection is ${new ls.ConnectionStateWrapper(
+                        conn.getState()
+                    ).toString()}.`
+                );
+            });
+
+            connection.open();
+
+            return connection;
+        };
+
 </script>
 
 <style scoped>

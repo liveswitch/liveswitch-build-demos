@@ -1,63 +1,78 @@
 <template>
   <v-img src="@/assets/logo.svg" class="logo"/>
 
-  <div style="display: flex; justify-content: center;">
+  <div class="col">
     <div>
       <div>
-        <div style="color: white; width: fit-content;" class="margin"><h2>Preview</h2></div>
+        <div class="header margin"><h2>Preview</h2></div>
       </div>
-      <div style="display: flex;">
+      <div class="basic-flex" :class="localMedia ? '' : 'empty-video'">
         <Video 
         :userCount=1
-        style="margin: 5px;"></Video>
+        class="margin"
+        :cameraMuted="cameraMuted"
+        :micMuted="micMuted"
+        :video="localMedia"></Video>
       </div>
     </div>
     <div>
       <div>
-        <div style="color: white;" class="margin"><h2>Setup</h2></div>
+        <div class="header margin"><h2>Setup</h2></div>
       </div>
 
-      <div style="width: 400px;background-color: ghostwhite; border-radius: 5px;padding: 10px;">
-        <div>
-          <v-text-field label="Display Name" style="width:290px;" class="margin input" hide-details="auto"></v-text-field>
+      <v-form class="settings-menu margin" @submit="joinCall" @submit.prevent="joinCall" >
+        <div class="row">
+          <v-text-field
+            label="Display Name"
+            class="margin input"
+            hide-details="auto"
+            :rules="[v => !!v || 'This field is Required']"
+            v-model="displayName"></v-text-field>
         </div>
-        <div>
-          <v-text-field label="Channel ID" style="width:290px;" class="margin input" hide-details="auto"></v-text-field>
+        <div class="row">
+          <v-text-field
+            label="Channel ID"
+            class="margin input"
+            hide-details="auto"
+            :rules="[v => !!v || 'This field is Required']"
+            v-model="channelId"></v-text-field>
         </div>
-        <div style="display: flex;">
+        <div class="row">
           <v-select
             label="Camera"
-            style="width:290px;"
             class="margin input"
             hide-details="auto"
+            :items="cameraList"
+            item-title="name"
+            item-value="id"
+            v-model="activeCamera"
           ></v-select>
-          <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 24px;">
-            <i class="center icon-video"/>
+          <v-btn class="margin button"
+            icon
+            @click="toggleVideoMute">
+            <i class="center" :class="cameraMuted ? 'icon-video-slash' : 'icon-video'"/>
           </v-btn>
         </div>
-        <div style="display: flex;">
+        <div class="row">
           <v-select
             label="Microphone"
-            style="width:290px;"
             class="margin  input"
             hide-details="auto"
+            :items="micList"
+            item-title="name"
+            item-value="id"
+            v-model="activeMic"
           ></v-select>
-          <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 24px;">
-            <i class="center icon-audio-mic"/>
+          <v-btn class="margin button"
+            icon
+            @click="toggleAudioMute">
+            <i class="center" :class="micMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
           </v-btn>
         </div>
-        <div>
-          <v-select
-            label="Speaker"
-            style="width:290px;"
-            class="margin input"
-            hide-details="auto"
-          ></v-select>
+        <div class="row">
+          <v-btn class="margin center join-button" type="submit">Join</v-btn>
         </div>
-        <div style="display: flex; justify-content: center;">
-          <v-btn class="margin center" style="color: white; background-color: blue;" @click="joinCall">Join</v-btn>
-        </div>
-      </div>
+      </v-form>
     </div>
   </div>
 </template>
@@ -66,17 +81,122 @@
   import "../assets/css/liveswitch.css"
   import { useRouter } from "vue-router";
   import Video from "./Video.vue"
+  import ls from 'fm.liveswitch'
+  import { Ref, onMounted, ref } from "vue";
+  import { useStore } from 'vuex'
 
+  const store = useStore();
   const router = useRouter();
+  let cameraList: Ref<{name: string, id: string}[]> = ref([]);
+  let micList: Ref<{name: string, id: string}[]> = ref([]);
+  const activeCamera: Ref<string> = ref("");
+  const activeMic: Ref<string> = ref("");
+  const cameraMuted : Ref<boolean> = ref(false);
+  const micMuted : Ref<boolean> = ref(false);
+  let localMedia : Ref<ls.LocalMedia | undefined> = ref(undefined);
 
-  function joinCall() {
+  const form : Ref<any> = ref(null);
+
+  const displayName : Ref<String> = ref("");
+  const channelId : Ref<String> = ref("");
+
+  async function joinCall(this: any, event: any) {
+    const results = await event
+    
+    if (!results.valid) {  
+      return;
+    }
+    store.commit('setChannelId', channelId.value)
+    store.commit('setDisplayName', displayName.value)
+    console.log("joining call")
     router.push('/inCall');
   }
+
+  function toggleAudioMute () {
+    micMuted.value = !micMuted.value;
+    if (localMedia.value) {
+      localMedia.value.setAudioMuted(micMuted.value)
+    }
+  }
+
+  function toggleVideoMute () {
+    cameraMuted.value = !cameraMuted.value;
+    if (localMedia.value) {
+      localMedia.value.setVideoMuted(cameraMuted.value)
+    }
+  }
+
+  onMounted(async () => {
+    const media = new ls.LocalMedia(true, true)
+    await media.start()
+    onLocalMediaReady(media)
+    
+  })
+  const onLocalMediaReady = function (media: ls.LocalMedia) {
+    store.commit('setLocalMedia', media)
+    localMedia.value = media;
+    const videoContainer = document.getElementById("home") as HTMLMediaElement;
+    if (videoContainer && media) {
+        var layoutManager = new ls.DomLayoutManager(videoContainer);
+        // layoutManager.setLocalView(media.getView());
+        // videoContainer.srcObject(media.getVideoTrack())
+        // debugger;
+    }
+    activeCamera.value = media.getVideoSourceInput().getId();
+    activeMic.value = media.getAudioSourceInput().getId();
+    media.getVideoSourceInputs().then(function(inputs){
+        cameraList.value = inputs.map(x=>{return { name: x.getName(), id: x.getId()}})
+    }).fail(function(ex){
+        console.error(ex)
+    });
+    media.getAudioSourceInputs().then(function(inputs){
+        micList.value = inputs.map(x=>{return { name: x.getName(), id: x.getId()}})
+    }).fail(function(ex){
+        console.error(ex)
+    });
+    
+    cameraMuted.value = media.getVideoMuted();
+    micMuted.value = media.getAudioMuted();
+  }
+  
 </script>
 
 <style scoped>
   .margin {
     margin: 5px 10px 5px 10px;
+  }
+  .basic-flex {
+    display: flex;
+  }
+  .button {
+    height: 40px;
+    width: 40px;
+    color: white;
+    background-color: rgba(3,1,28,.8);
+    font-size: 24px;
+  }
+  .row {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+  }
+  .col {
+    display: flex;
+    justify-content: center;
+  }
+  .header {
+    color: white;
+    width: fit-content;
+  }
+  .empty-video {
+    background-color: black;
+    border-radius: 15px;
+  }
+  .settings-menu {
+    width: 400px;
+    background-color: ghostwhite;
+    border-radius: 5px;
+    padding: 10px;
   }
   div.center {
     margin-left: auto;
@@ -95,16 +215,16 @@
   i.center {
     margin-left: -7px;
   }
-  .video-preview {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    display: flex;
-    flex: 1;
-    background-color: #000;
-    border-radius: 15px;
-  }
   .input {
-        flex-grow: 0;
-    }
+      flex-grow: 0;
+      width: 290px;
+  }
+  .fm-video {
+      width: 640px;
+      height: 480px;
+  }
+  .join-button {
+    color: white;
+    background-color: blue;
+  }
 </style>

@@ -1,0 +1,6 @@
+{
+    "applicationId": "62c0809a-5671-426f-94a5-8edbdd1fe962",
+    "gatewayUrl" : "https://cloud.liveswitch.io", 
+    "channelId": "/room/OHTest",
+    "sharedSecret": "0070c9c582894ef7969986ba228399c527201d910ed9451eb8b45097194ad689"
+}
