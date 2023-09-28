@@ -18,12 +18,15 @@
                 :userCount="userCount"
                 :video="store.state.localMedia"
                 userName="Me"> </Video>
-                <!-- <Video
+                <Video
                 v-if="downstreamConnections"
                 style="margin: 5px;"
                 :userCount="userCount"
-                v-for="video in videos"
-                :userName=video> </Video> -->
+                v-for="(value, index) in downstreamConnections"
+                :remoteVideo="value.media"
+                :index="value.index"
+                :userName="value.displayName"
+                :connection="value.connection"> </Video>
             </div>
         </div>
         <div style="width: 400px; padding-top: 125px;">
@@ -34,9 +37,13 @@
                         style="width:290px;"
                         class="margin input"
                         hide-details="auto"
+                        :items="cameraList"
+                        item-title="name"
+                        item-value="id"
+                        v-model="activeCamera"
                     ></v-select>
-                    <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 24px;">
-                        <i class="center icon-video"/>
+                    <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 24px;" @click="toggleVideoMute">
+                        <i class="center" :class="cameraMuted ? 'icon-video-slash' : 'icon-video'"/>
                     </v-btn>
                 </div>
                 <div style="display: flex;">
@@ -45,9 +52,13 @@
                         style="width:290px;"
                         class="margin input"
                         hide-details="auto"
+                        :items="micList"
+                        item-title="name"
+                        item-value="id"
+                        v-model="activeMic"
                     ></v-select>
-                    <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 24px;">
-                        <i class="center icon-audio-mic"/>
+                    <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 24px;" @click="toggleAudioMute">
+                        <i class="center" :class="micMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
                     </v-btn>
                 </div>
                 <div>
@@ -90,19 +101,35 @@
     import config from '../../liveswitch_config.json'
 
     const store = useStore();
-    console.log(store.state);
+
+    let cameraList: Ref<{name: string, id: string}[]> = ref([]);
+    let micList: Ref<{name: string, id: string}[]> = ref([]);
+    const activeCamera: Ref<string> = ref("");
+    const activeMic: Ref<string> = ref("");
+    const cameraMuted : Ref<boolean> = ref(false);
+    const micMuted : Ref<boolean> = ref(false);
+
+    const remoteCounter : Ref<number> = ref(1);
 
     let upstreamConnection: Ref<ls.SfuUpstreamConnection | undefined> = ref(undefined);
     let channel: ls.Channel | null = null;
     let client : ls.Client | null = null;
 
-    let downstreamConnections: { [id: string] : ls.SfuDownstreamConnection; } = {};
+    let downstreamConnections: Ref<{ [id: string] : {connection: ls.SfuDownstreamConnection, media: ls.RemoteMedia, index: number, displayName: string }}> = ref({});
 
-    let layoutManager : ls.DomLayoutManager |  null = null;
+    const media = store.state.localMedia;
 
     const router = useRouter();
 
     function leaveCall() {
+        for (let key in downstreamConnections.value) {
+            const dsConnection = downstreamConnections.value[key].connection;
+            if (dsConnection.getState() !== ls.ConnectionState.Closed.valueOf() || dsConnection.getState() !== ls.ConnectionState.Closing) {
+                dsConnection.close();
+            }
+            delete downstreamConnections.value[key];
+        }
+        leaveAsync();
         router.push('/');
     }
 
@@ -113,22 +140,51 @@
     const videos : string[] = ['Me', 'User 2', 'User 3', 'User 4'];
     var userCount : Ref<number> = ref(videos.length);
 
-    onMounted(async () => {
-        const media = store.state.localMedia;
-        
-        await joinAsync();
-        const videoContainer = document.getElementById("home");
-        if (videoContainer && media) {
-            layoutManager = new ls.DomLayoutManager(videoContainer);
-            layoutManager.setLocalView(media.getView());
+    function toggleAudioMute () {
+        micMuted.value = !micMuted.value;
+        if (media && upstreamConnection.value) {
+            let config = upstreamConnection.value.getConfig();
+            config.setLocalAudioMuted(micMuted.value);
+            upstreamConnection.value.update(config);
+            media.setAudioMuted(micMuted.value)
         }
+    }
+
+    function toggleVideoMute () {
+        cameraMuted.value = !cameraMuted.value;
+        if (media && upstreamConnection.value) {
+            let config = upstreamConnection.value.getConfig();
+            config.setLocalVideoMuted(micMuted.value);
+            upstreamConnection.value.update(config);
+            media.setVideoMuted(cameraMuted.value)
+        }
+    }
+    onMounted(async () => {
+        await joinAsync();
+
+        activeCamera.value = media.getVideoSourceInput().getId();
+        activeMic.value = media.getAudioSourceInput().getId();
+        media.getVideoSourceInputs().then(function(inputs: any){
+            cameraList.value = inputs.map((x: ls.SourceInput)=>{return { name: x.getName(), id: x.getId()}})
+        }).fail(function(ex: any){
+            console.error(ex)
+        });
+        media.getAudioSourceInputs().then(function(inputs: any[]){
+            micList.value = inputs.map((x: ls.SourceInput)=>{return { name: x.getName(), id: x.getId()}})
+        }).fail(function(ex: any){
+            console.error(ex)
+        });
+        
+        cameraMuted.value = media.getVideoMuted();
+        micMuted.value = media.getAudioMuted();
     })
 
-    async function joinAsync (this: any) {
+        async function joinAsync (this: any) {
             const promise = new ls.Promise();
 
             // Create a client.
             client = new ls.Client(config.gatewayUrl, config.applicationId);
+            client.setUserAlias(store.state.displayName);
 
             // Generate a token (do this on the server to avoid exposing your shared secret).
             const token = ls.Token.generateClientRegisterToken(
@@ -170,17 +226,13 @@
             }
         };
 
-        function openSfuDownstreamConnection (remoteConnectionInfo: any, channel: ls.Channel | null) {
+        function openSfuDownstreamConnection (remoteConnectionInfo: ls.ConnectionInfo, channel: ls.Channel | null) {
             // Create remote media.
             const remoteMedia = new ls.RemoteMedia();
             const audioStream = new ls.AudioStream(remoteMedia);
             const videoStream = new ls.VideoStream(remoteMedia);
-
-            if (layoutManager) {
-                // Add remote media to the layout.
-                layoutManager.addRemoteMedia(remoteMedia);
-            }
-
+            
+            console.log(remoteConnectionInfo.getUserAlias());
             if (channel) {
                 // Create a SFU downstream connection with remote audio and video.
                 const connection = channel.createSfuDownstreamConnection(
@@ -188,18 +240,15 @@
                     audioStream,
                     videoStream
                 );
-
                 // Store the downstream connection.
-                downstreamConnections[connection.getId()] = connection;
-
+                downstreamConnections.value[connection.getId()] = {connection: connection, media: remoteMedia, index: remoteCounter.value++, displayName: remoteConnectionInfo.getUserAlias()};
+                
                 connection.addOnStateChange((conn) => {
                     // Remove the remote media from the layout and destroy it if the remote is closed.
                     if (conn.getRemoteClosed()) {
-                        delete downstreamConnections[connection.getId()];
-                        if (layoutManager) {
-                            layoutManager.removeRemoteMedia(remoteMedia);
-                        }
+                        delete downstreamConnections.value[connection.getId()];
                         remoteMedia.destroy();
+                        remoteCounter.value--;
                     }
                 });
 
@@ -234,6 +283,14 @@
             connection.open();
 
             return connection;
+        };
+
+        function leaveAsync () {
+            if (client) {
+                return client
+                    .unregister()
+                    .fail(() => ls.Log.error("Unregistration failed."));
+            }
         };
 
 </script>

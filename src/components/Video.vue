@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { StyleValue, toRef, watch } from "vue";
+    import { StyleValue, toRef, watch, Ref, ref } from "vue";
     import { useDisplay } from 'vuetify'
     import ls from 'fm.liveswitch'
 import { onMounted } from "vue";
@@ -37,16 +37,24 @@ import { onMounted } from "vue";
         video : {
             type: ls.LocalMedia
         },
-        cameraMuted: {
-            type: Boolean
+        remoteVideo : {
+            type: Object
         },
-        micMuted: {
-            type: Boolean
+        index: {
+            type: Number
+        },
+        connection: {
+            type: ls.SfuDownstreamConnection
         }
 	});
     const localMedia = toRef(props, 'video');
+    const remoteMedia = toRef(props, 'remoteVideo');
+
     var calcHeight = props.askHeight || "375px"
     var calcWidth = props.askWidth || "640px"
+
+    const cameraMuted: Ref<boolean> = ref(false);
+    const micMuted: Ref<boolean> = ref(false);
 
     const { mobile } = useDisplay();
 
@@ -59,10 +67,41 @@ import { onMounted } from "vue";
         
     const insertVideo = function () {
         const videoContainer = document.getElementsByClassName("video-wrapper");
-        if (videoContainer && videoContainer[0] && localMedia.value) {
-            let videoNode = localMedia.value.getView();
-            let firstChild = videoContainer[0].childNodes[1]
-            videoContainer[0].insertBefore(videoNode, firstChild)
+        if (videoContainer && videoContainer[0]) {
+            let videoNode;
+            let firstChild;
+            if (localMedia.value) {
+                videoNode = localMedia.value.getView();
+                firstChild = videoContainer[0].childNodes[1]
+                videoContainer[0].insertBefore(videoNode, firstChild)
+            }
+            else if (remoteMedia.value && props.index) {
+                videoNode = remoteMedia.value.getView();
+                firstChild = videoContainer[props.index].childNodes[1]
+                videoContainer[props.index].insertBefore(videoNode, firstChild)
+            }
+        }
+        if (localMedia && localMedia.value) {
+            localMedia.value?.addOnAudioMuted(() => {
+                micMuted.value = true;
+            })
+            localMedia.value?.addOnAudioUnmuted(() => {
+                micMuted.value = false;
+            })
+            localMedia.value?.addOnVideoMuted(() => {
+                cameraMuted.value = true;
+            })
+            localMedia.value?.addOnVideoUnmuted(() => {
+                cameraMuted.value = false;
+            })
+        }
+        else if (remoteMedia && remoteMedia.value) {
+            console.log(props.connection);
+            props.connection?.addOnRemoteUpdate((old, connectionInfo) => {
+                debugger;
+                micMuted.value = connectionInfo.getLocalAudioMuted();
+                cameraMuted.value = connectionInfo.getLocalVideoMuted();
+            })
         }
     }
 
