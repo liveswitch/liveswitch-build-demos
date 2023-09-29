@@ -7,7 +7,7 @@
             <div style="display: flex; justify-content: space-between; margin: 0px 10px;">
                 <div style="color: white; font-size: 24px;">
                     <i class="icon-users" style="color: white; font-size: 28px;"/>
-                    {{ userCount }}
+                    {{ remoteCounter }}
                 </div>
                 <v-btn style="background-color: red;color: white;" @click="leaveCall">Leave Call</v-btn>
             </div>
@@ -15,14 +15,12 @@
                 <Video
                 v-if="upstreamConnection"
                 style="margin: 5px;"
-                :userCount="userCount"
-                :video="store.state.localMedia"
+                :local-video="store.state.localMedia"
                 userName="Me"> </Video>
                 <Video
                 v-if="downstreamConnections"
                 style="margin: 5px;"
-                :userCount="userCount"
-                v-for="(value, index) in downstreamConnections"
+                v-for="value in downstreamConnections"
                 :remoteVideo="value.media"
                 :index="value.index"
                 :userName="value.displayName"
@@ -41,6 +39,7 @@
                         item-title="name"
                         item-value="id"
                         v-model="activeCamera"
+                        @update:model-value="changeCamera"
                     ></v-select>
                     <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 24px;" @click="toggleVideoMute">
                         <i class="center" :class="cameraMuted ? 'icon-video-slash' : 'icon-video'"/>
@@ -56,6 +55,7 @@
                         item-title="name"
                         item-value="id"
                         v-model="activeMic"
+                        @update:model-value="changeMicrophone"
                     ></v-select>
                     <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 24px;" @click="toggleAudioMute">
                         <i class="center" :class="micMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
@@ -67,6 +67,12 @@
                     style="width:290px;"
                     class="margin input"
                     hide-details="auto"
+                    v-if="speakerList.length > 0"
+                    :items="speakerList"
+                    item-title="name"
+                    item-value="id"
+                    v-model="activeSpeaker"
+                    @update:model-value="changeSpeaker"
                     ></v-select>
                 </div>
             </div>
@@ -75,6 +81,10 @@
                     <h2 class="margin">Chat</h2>
                 </div>
                 <div class="chat-body">
+                    <div
+                        v-for="value in messages">
+                        {{ value.user }}: {{ value.message }}
+                    </div>
                 </div>
                 <div style="display: flex; position: absolute;bottom: 0; flex-direction: row; width: 100%;">
                     <v-text-field
@@ -83,8 +93,13 @@
                     style="width: 280px;"
                     class="margin input"
                     hide-details="auto"
+                    v-model="chatMessage"
                     ></v-text-field>
-                    <v-btn style="float: right;color: white; background-color: blue; position: absolute; bottom: 5px; right: 5px">Send</v-btn>
+                    <v-btn
+                        style="float: right;color: white; background-color: blue; position: absolute; bottom: 5px; right: 5px"
+                        @click="sendChat">
+                            Send
+                    </v-btn>
                 </div>
             </div>
         </div>
@@ -93,7 +108,6 @@
   
 <script lang="ts" setup>
     import { Ref,ref,onMounted } from "vue";
-    import { useDisplay } from 'vuetify'
     import { useRouter } from "vue-router";
     import Video from "./Video.vue"
     import { useStore } from 'vuex'
@@ -101,67 +115,136 @@
     import config from '../../liveswitch_config.json'
 
     const store = useStore();
+    const router = useRouter();
 
     let cameraList: Ref<{name: string, id: string}[]> = ref([]);
     let micList: Ref<{name: string, id: string}[]> = ref([]);
+    let speakerList: Ref<{name: string, id: string}[]> = ref([]);
+
     const activeCamera: Ref<string> = ref("");
     const activeMic: Ref<string> = ref("");
+    const activeSpeaker: Ref<string> = ref("");
+
     const cameraMuted : Ref<boolean> = ref(false);
     const micMuted : Ref<boolean> = ref(false);
 
     const remoteCounter : Ref<number> = ref(1);
 
-    let upstreamConnection: Ref<ls.SfuUpstreamConnection | undefined> = ref(undefined);
+    const media : ls.LocalMedia = store.state.localMedia;
     let channel: ls.Channel | null = null;
     let client : ls.Client | null = null;
 
-    let downstreamConnections: Ref<{ [id: string] : {connection: ls.SfuDownstreamConnection, media: ls.RemoteMedia, index: number, displayName: string }}> = ref({});
+    let upstreamConnection: Ref<ls.SfuUpstreamConnection | undefined> = ref(undefined);
+    let downstreamConnections: Ref<{ [id: string] : 
+        {connection: ls.SfuDownstreamConnection, media: ls.RemoteMedia, index: number, displayName: string }}> = ref({});
 
-    const media = store.state.localMedia;
+    const chatMessage: Ref<string> = ref("");
+    let messages: Ref<{user: string, message: string}[]> = ref([]);
 
-    const router = useRouter();
 
+    // handler function for leave button
     function leaveCall() {
+        // loop through downstream connections we have a reference to
         for (let key in downstreamConnections.value) {
+            //pull of the connection object
             const dsConnection = downstreamConnections.value[key].connection;
+            // if the connection is not closed or in a state of closing, close it
             if (dsConnection.getState() !== ls.ConnectionState.Closed.valueOf() || dsConnection.getState() !== ls.ConnectionState.Closing) {
                 dsConnection.close();
             }
+            // remove the connection from out local list
             delete downstreamConnections.value[key];
         }
+        // handle local connection
         leaveAsync();
+        // switch back to home page
         router.push('/');
     }
 
-    // Destructure only the keys you want to use
-    const { mobile } = useDisplay();
-    const isPortrait: Ref<boolean> = ref(mobile && window.innerHeight > window.innerWidth);
-
-    const videos : string[] = ['Me', 'User 2', 'User 3', 'User 4'];
-    var userCount : Ref<number> = ref(videos.length);
-
     function toggleAudioMute () {
+        //set local value to update UI
         micMuted.value = !micMuted.value;
         if (media && upstreamConnection.value) {
+            // need to send an event that we have changed mute state
+            // need to pull config off of the connection
             let config = upstreamConnection.value.getConfig();
+            // update the property on the connection
             config.setLocalAudioMuted(micMuted.value);
+            // save the changes which will trigger the event to that can picked up by others in the channel
             upstreamConnection.value.update(config);
-            media.setAudioMuted(micMuted.value)
         }
     }
 
     function toggleVideoMute () {
+        //set local value to update UI
         cameraMuted.value = !cameraMuted.value;
         if (media && upstreamConnection.value) {
+            // need to send an event that we have changed mute state
+            // need to pull config off of the connection
             let config = upstreamConnection.value.getConfig();
-            config.setLocalVideoMuted(micMuted.value);
+            // update the property on the connection
+            config.setLocalVideoMuted(cameraMuted.value);
+            // save the changes which will trigger the event to that can picked up by others in the channel
             upstreamConnection.value.update(config);
-            media.setVideoMuted(cameraMuted.value)
         }
     }
+
+    function changeCamera (value: any) {
+        // value is the ID of the input, need to parse through list and find the SourceInput object
+        media.getVideoSourceInputs().then(function(inputs: any[]){
+            // find matching object
+            let videoSource = inputs.find((x: ls.SourceInput)=>{return x.getId() === value})
+            if (videoSource) {
+                //set object as new source
+                media.changeVideoSourceInput(videoSource);
+            }
+        })
+    }
+
+    function changeMicrophone (value: any) {
+        // value is the ID of the input, need to parse through list and find the SourceInput object
+        media.getAudioSourceInputs().then(function(inputs: any[]){
+            // find matching object
+            let audioSource = inputs.find((x: ls.SourceInput)=>{return x.getId() === value})
+            if (audioSource) {
+                //set object as new source
+                media.changeAudioSourceInput(audioSource);
+            }
+        })
+    }
+
+    function changeSpeaker (value: any) {
+        debugger;
+    }
+
+    // send button handler
+    function sendChat () {
+        // check to make sure we will not send an empty message
+        if (chatMessage.value.length === 0) {
+            return;
+        }
+        // create message blob with necessary data
+        let dateObj = new Date();
+        var message = {
+            from: store.state.displayName, 
+            timestamp: (new Date().getTime()), 
+            timestampHourFormat: dateObj.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }),
+            timestampDateFormat: (dateObj.toLocaleString()),
+            text: chatMessage.value
+        }
+        // if we have a channel, send the message
+        if (channel) {
+            channel.sendMessage(JSON.stringify(message))
+        }
+        // reset ref to clear input box
+        chatMessage.value = "";
+    }
+
     onMounted(async () => {
+        // wait to join until after UI has been rendered
         await joinAsync();
 
+        // get input devices data
         activeCamera.value = media.getVideoSourceInput().getId();
         activeMic.value = media.getAudioSourceInput().getId();
         media.getVideoSourceInputs().then(function(inputs: any){
@@ -177,13 +260,27 @@
         
         cameraMuted.value = media.getVideoMuted();
         micMuted.value = media.getAudioMuted();
+
+        // add handler to respond to incoming messages
+        if (channel) {
+            channel.addOnMessage(function(sender, message){
+                // if(channel && channel.getClientId() == sender.getId()){
+                //     return;
+                // }
+                var data = JSON.parse(message)
+                console.log(message);
+                messages.value.push({user: data.from, message: data.text})
+            })
+        }
     })
 
+        // function that joins to a channel and session
         async function joinAsync (this: any) {
             const promise = new ls.Promise();
 
             // Create a client.
             client = new ls.Client(config.gatewayUrl, config.applicationId);
+            // set display name
             client.setUserAlias(store.state.displayName);
 
             // Generate a token (do this on the server to avoid exposing your shared secret).
@@ -211,6 +308,7 @@
             return promise;
         };
 
+        // handler called once the client has been registered
         function onClientRegistered (this: any, channels: any) {
             // Store our channel reference.
             channel = channels[0];
@@ -226,13 +324,13 @@
             }
         };
 
+        // handle setting up the downstream connection
         function openSfuDownstreamConnection (remoteConnectionInfo: ls.ConnectionInfo, channel: ls.Channel | null) {
             // Create remote media.
             const remoteMedia = new ls.RemoteMedia();
             const audioStream = new ls.AudioStream(remoteMedia);
             const videoStream = new ls.VideoStream(remoteMedia);
             
-            console.log(remoteConnectionInfo.getUserAlias());
             if (channel) {
                 // Create a SFU downstream connection with remote audio and video.
                 const connection = channel.createSfuDownstreamConnection(
@@ -240,18 +338,37 @@
                     audioStream,
                     videoStream
                 );
-                // Store the downstream connection.
+                // Store the downstream connection and its components.
                 downstreamConnections.value[connection.getId()] = {connection: connection, media: remoteMedia, index: remoteCounter.value++, displayName: remoteConnectionInfo.getUserAlias()};
                 
+                //seed the speaker list if we do not have one
+                if (speakerList.value.length === 0) {
+                    remoteMedia.getAudioSinkOutputs().then(function(outputs: any){
+                        speakerList.value = outputs.map((x: ls.SourceInput)=>{
+                            //set default as active on the first pass
+                            if (x.getId() === "default") {
+                                activeSpeaker.value = x.getId();
+                            }
+                            return { name: x.getName(), id: x.getId()}
+                        })
+                    }).fail(function(ex: any){
+                        console.error(ex)
+                    });
+                }
+
                 connection.addOnStateChange((conn) => {
                     // Remove the remote media from the layout and destroy it if the remote is closed.
                     if (conn.getRemoteClosed()) {
+                        // remove connection from our list
                         delete downstreamConnections.value[connection.getId()];
+                        // delete the remote media
                         remoteMedia.destroy();
+                        //update the video tile index counter
                         remoteCounter.value--;
                     }
                 });
 
+                // open connection now that our handlers have been set
                 connection.open();
                 return connection;
             }
@@ -262,6 +379,7 @@
             const audioStream = new ls.AudioStream(localMedia);
             const videoStream = new ls.VideoStream(localMedia);
 
+            //channel is required so exit if it is null
             if (!channel) {
                 return;
             }
@@ -272,6 +390,7 @@
                 videoStream
             );
 
+            // add logging for remote state
             connection.addOnStateChange((conn) => {
                 ls.Log.debug(
                     `Upstream connection is ${new ls.ConnectionStateWrapper(
@@ -280,11 +399,12 @@
                 );
             });
 
+            // open connection now that handlers have been added
             connection.open();
-
             return connection;
         };
 
+        // when leaving a meeting, this handles disconnecting from the client
         function leaveAsync () {
             if (client) {
                 return client

@@ -1,6 +1,5 @@
 <template>
     <div class="video-wrapper" :style="{height: calcHeight, width: calcWidth}">
-        <!-- <v-img class="video" cover src="@/assets/headshot.jpeg" :style="{height: calcHeight, width: calcWidth}"/> -->
         <div class="video-overlay" style="background-color: #03011d; opacity: 60%;"></div>
         <div class="video-overlay" style="justify-content: center;">
             <div class="video-controls">
@@ -16,71 +15,97 @@
 </template>
 
 <script lang="ts" setup>
-    import { StyleValue, toRef, watch, Ref, ref } from "vue";
+    import { StyleValue, toRef, watch, Ref, ref, onMounted } from "vue";
     import { useDisplay } from 'vuetify'
     import ls from 'fm.liveswitch'
-import { onMounted } from "vue";
     
+    // incoming props for this component
     const props = defineProps({
+        // same as display name
 		userName: {
 			type: String
 		},
-        userCount: {
-            type: Number
-        },
+        // optional height prop
         askHeight: {
             type: String
         },
+        // optional width prop
         askWidth: {
             type: String
         },
-        video : {
+        // video object if local 
+        localVideo : {
             type: ls.LocalMedia
         },
+        // video object if remote
         remoteVideo : {
             type: Object
         },
+        // used to determine position to insert video
         index: {
             type: Number
         },
+        // remote connection to properly update UI
         connection: {
             type: ls.SfuDownstreamConnection
         }
 	});
-    const localMedia = toRef(props, 'video');
+
+    // setup media as refs
+    const localMedia = toRef(props, 'localVideo');
     const remoteMedia = toRef(props, 'remoteVideo');
 
+    // if no height or width is passed in use defaults
     var calcHeight = props.askHeight || "375px"
     var calcWidth = props.askWidth || "640px"
 
+    // establish reactive muted states
     const cameraMuted: Ref<boolean> = ref(false);
     const micMuted: Ref<boolean> = ref(false);
 
+    // need to know if we are on a mobile layout
     const { mobile } = useDisplay();
 
+    // handle custom styles based on local and mobile
     const pinStyle : StyleValue = props.userName === 'Me' ? "justify-content: space-between;" : "justify-content: end;"
     const labelStyle : StyleValue = mobile && props.userName === 'Me' ? "margin-top: 14px;" : ""
 
+    // once we have a value for local media, we should render it to the screen
     watch(localMedia, async () => {
+        insertVideo()
+    })
+
+    // attempt to insert video once UI is mounted
+    onMounted(() => {
         insertVideo()
     })
         
     const insertVideo = function () {
+        //get video container element
         const videoContainer = document.getElementsByClassName("video-wrapper");
         if (videoContainer && videoContainer[0]) {
             let videoNode;
             let firstChild;
+            // handle local case
             if (localMedia.value) {
+                // get UI element from media
                 videoNode = localMedia.value.getView();
-                firstChild = videoContainer[0].childNodes[1]
+                // get first child since video element will need to be first child
+                firstChild = videoContainer[0].childNodes[0]
+                // perform insert of video element
                 videoContainer[0].insertBefore(videoNode, firstChild)
             }
             else if (remoteMedia.value && props.index) {
+                // get UI element from media
                 videoNode = remoteMedia.value.getView();
-                firstChild = videoContainer[props.index].childNodes[1]
+                // get first child since video element will need to be first child
+                // we will use the index here since there are potentially multiple remote video tiles
+                firstChild = videoContainer[props.index].childNodes[0]
+                // perform insert of video element
                 videoContainer[props.index].insertBefore(videoNode, firstChild)
             }
         }
+        // add listeners for local mute states
         if (localMedia && localMedia.value) {
             localMedia.value?.addOnAudioMuted(() => {
                 micMuted.value = true;
@@ -95,21 +120,16 @@ import { onMounted } from "vue";
                 cameraMuted.value = false;
             })
         }
+        // add listeners for remote updates
         else if (remoteMedia && remoteMedia.value) {
-            console.log(props.connection);
             props.connection?.addOnRemoteUpdate((old, connectionInfo) => {
-                debugger;
+                // since we do not get specific handlers like we do on local media,
+                // we need to assume both audio and video states could have changed
                 micMuted.value = connectionInfo.getLocalAudioMuted();
                 cameraMuted.value = connectionInfo.getLocalVideoMuted();
             })
         }
     }
-
-    onMounted(() => {
-        insertVideo()
-    })
-
-
 </script>
 
 <style lang="scss">

@@ -10,9 +10,7 @@
         <Video 
         :userCount=1
         class="margin"
-        :cameraMuted="cameraMuted"
-        :micMuted="micMuted"
-        :video="localMedia"></Video>
+        :local-video="localMedia"></Video>
       </div>
     </div>
     <div>
@@ -46,6 +44,7 @@
             item-title="name"
             item-value="id"
             v-model="activeCamera"
+            @update:model-value="changeCamera"
           ></v-select>
           <v-btn class="margin button"
             icon
@@ -62,6 +61,7 @@
             item-title="name"
             item-value="id"
             v-model="activeMic"
+            @update:model-value="changeMicrophone"
           ></v-select>
           <v-btn class="margin button"
             icon
@@ -108,7 +108,7 @@
     }
     store.commit('setChannelId', channelId.value)
     store.commit('setDisplayName', displayName.value)
-    console.log("joining call")
+
     router.push('/inCall');
   }
 
@@ -125,6 +125,28 @@
       localMedia.value.setVideoMuted(cameraMuted.value)
     }
   }
+
+  function changeCamera (value: any) {
+    if (localMedia.value) {
+      localMedia.value.getVideoSourceInputs().then(function(inputs: any[]){
+            let videoSource = inputs.find((x: ls.SourceInput)=>{return x.getId() === value})
+            if (videoSource && localMedia.value) {
+              localMedia.value.changeVideoSourceInput(videoSource);
+            }
+        })
+      }
+    }
+
+    function changeMicrophone (value: any) {
+      if (localMedia.value) {
+        localMedia.value.getAudioSourceInputs().then(function(inputs: any[]){
+            let audioSource = inputs.find((x: ls.SourceInput)=>{return x.getId() === value})
+            if (audioSource && localMedia.value) {
+              localMedia.value.changeAudioSourceInput(audioSource);
+            }
+        })
+      }
+    }
 
   onMounted(async () => {
     const media = new ls.LocalMedia(true, true)

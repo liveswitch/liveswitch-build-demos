@@ -10,8 +10,7 @@ import App from './App.vue'
 // Composables
 import { createApp } from 'vue'
 import { createStore } from 'vuex'
-
-import router from "./router"
+import ls from 'fm.liveswitch'
 
 // Plugins
 import { registerPlugins } from '@/plugins'
@@ -39,10 +38,9 @@ const store = createStore({
       }
     }
   })
-
+  ls.Log.registerProvider(new ls.ConsoleLogProvider(ls.LogLevel.Debug));
 const app = createApp(App)
 
-app.use(router)
 app.use(store)
 
 registerPlugins(app)
