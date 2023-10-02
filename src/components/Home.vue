@@ -6,11 +6,11 @@
       <div>
         <div class="header margin"><h2>Preview</h2></div>
       </div>
-      <div class="basic-flex" :class="localMedia ? '' : 'empty-video'">
+      <div class="basic-flex" :class="store.state.localMedia ? '' : 'empty-video'">
         <Video 
         :userCount=1
         class="margin"
-        :local-video="localMedia"></Video>
+        :local-video="store.state.localMedia"></Video>
       </div>
     </div>
     <div>
@@ -44,8 +44,7 @@
             item-title="name"
             item-value="id"
             v-model="store.state.activeVideoDevice"
-            @update:model-value="store.commit('changeCamera')"
-          ></v-select>
+            @update:model-value="store.commit('changeCamera')"></v-select>
           <v-btn class="margin button"
             icon
             @click="store.commit('toggleLocalVideoMute')">
@@ -61,8 +60,7 @@
             item-title="name"
             item-value="id"
             v-model="store.state.activeAudioDevice"
-            @update:model-value="store.commit('changeMicrophone')"
-          ></v-select>
+            @update:model-value="store.commit('changeMicrophone')"></v-select>
           <v-btn class="margin button"
             icon
             @click="store.commit('toggleLocalAudioMute')">
@@ -90,7 +88,7 @@
     const router = useRouter();
 
     // setup reactive variable for local media
-    let localMedia : Ref<ls.LocalMedia | undefined> = ref(undefined);
+    // let localMedia : Ref<ls.LocalMedia | undefined> = ref(undefined);
 
     // setup input values
     const displayName : Ref<String> = ref("");
@@ -118,8 +116,6 @@
       
     })
     const onLocalMediaReady = function (media: ls.LocalMedia) {
-      localMedia.value = media;
-
       store.commit('setLocalMedia', media)
 
       store.commit('populateCameraList')
