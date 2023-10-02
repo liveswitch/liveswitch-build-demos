@@ -172,12 +172,10 @@
         flex-grow: 0;
     }
     div.fm-video {
-        width: 640px !important;
-        height: 375px !important;
+        width: 100% !important;
+        height: 100% !important;
     }
     video {
-        width: 640px !important;
-        height: 375px !important;
         object-fit: cover !important;
         border-radius: 15px;
     }

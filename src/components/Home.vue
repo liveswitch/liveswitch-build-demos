@@ -18,7 +18,7 @@
         <div class="header margin"><h2>Setup</h2></div>
       </div>
 
-      <v-form class="settings-menu margin" @submit="joinCall" @submit.prevent="joinCall" >
+      <v-form class="settings-menu margin" @submit="joinCall" @submit.prevent="joinCall">
         <div class="row">
           <v-text-field
             label="Display Name"
@@ -40,16 +40,16 @@
             label="Camera"
             class="margin input"
             hide-details="auto"
-            :items="cameraList"
+            :items="store.state.cameraList"
             item-title="name"
             item-value="id"
-            v-model="activeCamera"
-            @update:model-value="changeCamera"
+            v-model="store.state.activeVideoDevice"
+            @update:model-value="store.commit('changeCamera')"
           ></v-select>
           <v-btn class="margin button"
             icon
-            @click="toggleVideoMute">
-            <i class="center" :class="cameraMuted ? 'icon-video-slash' : 'icon-video'"/>
+            @click="store.commit('toggleLocalVideoMute')">
+            <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
           </v-btn>
         </div>
         <div class="row">
@@ -57,16 +57,16 @@
             label="Microphone"
             class="margin  input"
             hide-details="auto"
-            :items="micList"
+            :items="store.state.microphoneList"
             item-title="name"
             item-value="id"
-            v-model="activeMic"
-            @update:model-value="changeMicrophone"
+            v-model="store.state.activeAudioDevice"
+            @update:model-value="store.commit('changeMicrophone')"
           ></v-select>
           <v-btn class="margin button"
             icon
-            @click="toggleAudioMute">
-            <i class="center" :class="micMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
+            @click="store.commit('toggleLocalAudioMute')">
+            <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
           </v-btn>
         </div>
         <div class="row">
@@ -78,109 +78,60 @@
 </template>
 
 <script setup lang="ts">
-  import "../assets/css/liveswitch.css"
-  import { useRouter } from "vue-router";
-  import Video from "./Video.vue"
-  import ls from 'fm.liveswitch'
-  import { Ref, onMounted, ref } from "vue";
-  import { useStore } from 'vuex'
+    import "../assets/css/liveswitch.css";
+    import { useRouter } from "vue-router";
+    import Video from "./Video.vue";
+    import ls from 'fm.liveswitch';
+    import { Ref, onMounted, ref } from "vue";
+    import { useStore } from 'vuex';
 
-  const store = useStore();
-  const router = useRouter();
-  let cameraList: Ref<{name: string, id: string}[]> = ref([]);
-  let micList: Ref<{name: string, id: string}[]> = ref([]);
-  const activeCamera: Ref<string> = ref("");
-  const activeMic: Ref<string> = ref("");
-  const cameraMuted : Ref<boolean> = ref(false);
-  const micMuted : Ref<boolean> = ref(false);
-  let localMedia : Ref<ls.LocalMedia | undefined> = ref(undefined);
+    // setup some global access
+    const store = useStore();
+    const router = useRouter();
 
-  const form : Ref<any> = ref(null);
+    // setup reactive variable for local media
+    let localMedia : Ref<ls.LocalMedia | undefined> = ref(undefined);
 
-  const displayName : Ref<String> = ref("");
-  const channelId : Ref<String> = ref("");
+    // setup input values
+    const displayName : Ref<String> = ref("");
+    const channelId : Ref<String> = ref("");
 
-  async function joinCall(this: any, event: any) {
-    const results = await event
-    
-    if (!results.valid) {  
-      return;
-    }
-    store.commit('setChannelId', channelId.value)
-    store.commit('setDisplayName', displayName.value)
-
-    router.push('/inCall');
-  }
-
-  function toggleAudioMute () {
-    micMuted.value = !micMuted.value;
-    if (localMedia.value) {
-      localMedia.value.setAudioMuted(micMuted.value)
-    }
-  }
-
-  function toggleVideoMute () {
-    cameraMuted.value = !cameraMuted.value;
-    if (localMedia.value) {
-      localMedia.value.setVideoMuted(cameraMuted.value)
-    }
-  }
-
-  function changeCamera (value: any) {
-    if (localMedia.value) {
-      localMedia.value.getVideoSourceInputs().then(function(inputs: any[]){
-            let videoSource = inputs.find((x: ls.SourceInput)=>{return x.getId() === value})
-            if (videoSource && localMedia.value) {
-              localMedia.value.changeVideoSourceInput(videoSource);
-            }
-        })
+    // handler that validates form and switches to inCall screen
+    async function joinCall(this: any, event: any) {
+      // wait for form validation to complete
+      const results = await event
+      // only proceed if validation passes
+      if (!results.valid) {  
+        return;
       }
+      // update global store with inputs
+      store.commit('setChannelId', channelId.value)
+      store.commit('setDisplayName', displayName.value)
+      // navigate to inCall screen
+      router.push('/inCall');
     }
 
-    function changeMicrophone (value: any) {
-      if (localMedia.value) {
-        localMedia.value.getAudioSourceInputs().then(function(inputs: any[]){
-            let audioSource = inputs.find((x: ls.SourceInput)=>{return x.getId() === value})
-            if (audioSource && localMedia.value) {
-              localMedia.value.changeAudioSourceInput(audioSource);
-            }
-        })
-      }
-    }
+    onMounted(async () => {
+      const media = new ls.LocalMedia(true, true)
+      await media.start()
+      onLocalMediaReady(media)
+      
+    })
+    const onLocalMediaReady = function (media: ls.LocalMedia) {
+      localMedia.value = media;
 
-  onMounted(async () => {
-    const media = new ls.LocalMedia(true, true)
-    await media.start()
-    onLocalMediaReady(media)
-    
-  })
-  const onLocalMediaReady = function (media: ls.LocalMedia) {
-    store.commit('setLocalMedia', media)
-    localMedia.value = media;
-    const videoContainer = document.getElementById("home") as HTMLMediaElement;
-    if (videoContainer && media) {
-        var layoutManager = new ls.DomLayoutManager(videoContainer);
-        // layoutManager.setLocalView(media.getView());
-        // videoContainer.srcObject(media.getVideoTrack())
-        // debugger;
+      store.commit('setLocalMedia', media)
+
+      store.commit('populateCameraList')
+      store.commit('populateMicrophoneList')
+
+      store.commit('setActiveVideoDevice', media.getVideoSourceInput().getId());
+      store.commit('setActiveAudioDevice', media.getAudioSourceInput().getId());
+
+      
+      store.commit('setVideoMuted', media.getVideoMuted());
+      store.commit('setAudioMuted', media.getAudioMuted());
     }
-    activeCamera.value = media.getVideoSourceInput().getId();
-    activeMic.value = media.getAudioSourceInput().getId();
-    media.getVideoSourceInputs().then(function(inputs){
-        cameraList.value = inputs.map(x=>{return { name: x.getName(), id: x.getId()}})
-    }).fail(function(ex){
-        console.error(ex)
-    });
-    media.getAudioSourceInputs().then(function(inputs){
-        micList.value = inputs.map(x=>{return { name: x.getName(), id: x.getId()}})
-    }).fail(function(ex){
-        console.error(ex)
-    });
-    
-    cameraMuted.value = media.getVideoMuted();
-    micMuted.value = media.getAudioMuted();
-  }
-  
 </script>
 
 <style scoped>

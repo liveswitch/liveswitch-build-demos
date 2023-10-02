@@ -13,7 +13,7 @@
             </div>
             <div class="video-grid">
                 <Video
-                v-if="upstreamConnection"
+                v-if="store.state.localMedia"
                 style="margin: 5px;"
                 :local-video="store.state.localMedia"
                 userName="Me"> </Video>
@@ -41,8 +41,8 @@
                         v-model="activeCamera"
                         @update:model-value="changeCamera"
                     ></v-select>
-                    <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 24px;" @click="toggleVideoMute">
-                        <i class="center" :class="cameraMuted ? 'icon-video-slash' : 'icon-video'"/>
+                    <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 24px;" @click="store.commit('toggleLocalAudioMute')">
+                        <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
                     </v-btn>
                 </div>
                 <div style="display: flex;">
@@ -57,8 +57,8 @@
                         v-model="activeMic"
                         @update:model-value="changeMicrophone"
                     ></v-select>
-                    <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 24px;" @click="toggleAudioMute">
-                        <i class="center" :class="micMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
+                    <v-btn class="margin" icon style="color: white; background-color: rgba(3,1,28,.8);font-size: 24px;" @click="store.commit('toggleLocalAudioMute')">
+                        <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
                     </v-btn>
                 </div>
                 <div>
@@ -125,9 +125,6 @@
     const activeMic: Ref<string> = ref("");
     const activeSpeaker: Ref<string> = ref("");
 
-    const cameraMuted : Ref<boolean> = ref(false);
-    const micMuted : Ref<boolean> = ref(false);
-
     const remoteCounter : Ref<number> = ref(1);
 
     const media : ls.LocalMedia = store.state.localMedia;
@@ -159,34 +156,6 @@
         leaveAsync();
         // switch back to home page
         router.push('/');
-    }
-
-    function toggleAudioMute () {
-        //set local value to update UI
-        micMuted.value = !micMuted.value;
-        if (media && upstreamConnection.value) {
-            // need to send an event that we have changed mute state
-            // need to pull config off of the connection
-            let config = upstreamConnection.value.getConfig();
-            // update the property on the connection
-            config.setLocalAudioMuted(micMuted.value);
-            // save the changes which will trigger the event to that can picked up by others in the channel
-            upstreamConnection.value.update(config);
-        }
-    }
-
-    function toggleVideoMute () {
-        //set local value to update UI
-        cameraMuted.value = !cameraMuted.value;
-        if (media && upstreamConnection.value) {
-            // need to send an event that we have changed mute state
-            // need to pull config off of the connection
-            let config = upstreamConnection.value.getConfig();
-            // update the property on the connection
-            config.setLocalVideoMuted(cameraMuted.value);
-            // save the changes which will trigger the event to that can picked up by others in the channel
-            upstreamConnection.value.update(config);
-        }
     }
 
     function changeCamera (value: any) {
@@ -257,9 +226,6 @@
         }).fail(function(ex: any){
             console.error(ex)
         });
-        
-        cameraMuted.value = media.getVideoMuted();
-        micMuted.value = media.getAudioMuted();
 
         // add handler to respond to incoming messages
         if (channel) {
@@ -314,7 +280,8 @@
             channel = channels[0];
 
             // Open a new SFU upstream connection.
-            upstreamConnection.value = openSfuUpstreamConnection(store.state.localMedia);
+            const upstreamConnection = openSfuUpstreamConnection(store.state.localMedia);
+            store.commit('setUpstreamConnection', upstreamConnection);
 
             if (channel) {
             // Open a new SFU downstream connection when a remote upstream connection is opened.
