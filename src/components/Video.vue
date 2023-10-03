@@ -15,7 +15,7 @@
             style="color: white;"
             v-if="userName == 'Me'"
             v-model="pinLocal"
-            ide-details="auto"></v-switch>
+            hide-details="auto"></v-switch>
             <v-btn class="display-label" :style="labelStyle" v-if="userName">{{userName}}</v-btn>
         </div>
     </div>
@@ -217,7 +217,7 @@
             align-content: center;
         }
         button.display-label {
-            height: 80%;
+            height: 80% !important;
             border-radius: 15px;
             margin-right: 10px;
         }   

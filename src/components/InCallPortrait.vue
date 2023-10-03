@@ -108,7 +108,9 @@
                     <div class="chat-body">
                         <div
                         v-for="value in messages">
-                            {{ value.user }}: {{ value.message }}
+                            <div class="chat-message" :class="value.user === store.state.displayName ? 'my-chat' : 'other-chat'">
+                                {{ value.user }}: {{ value.message }}
+                            </div>
                         </div>
                     </div>
                     <div class="chat-footer">
@@ -136,7 +138,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { Ref,ref,onMounted, computed } from "vue";
+    import { Ref,ref,onMounted, computed, watch } from "vue";
     import { useRouter } from "vue-router";
     import Video from "./Video.vue"
     import { useStore } from 'vuex'
@@ -153,13 +155,18 @@
     })
     
     const lastPage = computed(() => {
+        let value = 1;
         if (store.state.pinLocal) {
-            return remoteCounter.value
+            value= remoteCounter.value - 1
         }
         else {
-            return Math.ceil((remoteCounter.value + 1) / maxDisplayVideo)
+            value = Math.ceil((remoteCounter.value) / maxDisplayVideo)
         }
+        // console.log("Last Page: " + value);
+        return value;
     })
+
+    watch(store.state.pinLocal, updateVideoLayout);
 
     let speakerList: Ref<{name: string, id: string}[]> = ref([]);
 
@@ -525,6 +532,7 @@
   .video-container {
     display: flex;
     margin: 10px 5px;
+    flex-direction: column;
   }
   .controls-container {
     display: flex;
@@ -602,5 +610,19 @@
   .tabs {
     width: 100%;
     background-color: white;
+  }
+  .chat-message {
+    margin: 5px;
+    border-radius: 5px;
+    padding: 3px;
+    width: fit-content;
+    color: white;
+  }
+  .my-chat {
+    background-color: rgb(0, 157, 255);
+    margin-left: auto;
+  }
+  .other-chat {
+    background-color: rgb(64, 156, 64);
   }
 </style>

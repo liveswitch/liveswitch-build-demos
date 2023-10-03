@@ -86,7 +86,9 @@
                 <div class="chat-body">
                     <div
                         v-for="value in messages">
-                        {{ value.user }}: {{ value.message }}
+                            <div class="chat-message" :class="value.user === store.state.displayName ? 'my-chat' : 'other-chat'">
+                                {{ value.user }}: {{ value.message }}
+                            </div>
                     </div>
                 </div>
                 <div class="chat-footer">
@@ -469,4 +471,18 @@
         bottom: 5px;
         right: 5px
     }
+    .chat-message {
+    margin: 5px;
+    border-radius: 5px;
+    padding: 3px;
+    width: fit-content;
+    color: white;
+  }
+  .my-chat {
+    background-color: rgb(0, 157, 255);
+    margin-left: auto;
+  }
+  .other-chat {
+    background-color: rgb(64, 156, 64);
+  }
 </style>

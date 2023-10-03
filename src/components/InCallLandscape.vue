@@ -11,7 +11,7 @@
                             :local-video="store.state.localMedia"
                             userName="Me"></Video>
                     </div>
-                    <div>
+                    <div class="basic-flex">
                         <Video
                             v-if="store.state.videoList"
                             v-for="value in store.state.videoList"
@@ -25,19 +25,19 @@
                     </div>
                 </div>
                 <div class="controls-container">
-                    <v-btn class="margin button align-left" :class="pageNumber === 1 ? 'inactive-button' : 'active-button'" icon @click="prevPage">
+                    <v-btn class="margin align-left" :class="pageNumber === 1 ? 'inactive-button' : 'active-button'" icon @click="prevPage">
                         <i class="center icon-caret-left-md"/>
                     </v-btn>
                     <!-- <v-btn class="margin button" icon>
                         <i class="center icon-flip-camera"/>
                     </v-btn> -->
-                    <v-btn class="margin button" icon @click="store.commit('toggleLocalVideoMute')">
+                    <v-btn class="margin active-button" icon @click="store.commit('toggleLocalVideoMute')">
                         <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
                     </v-btn>
-                    <v-btn class="margin button" icon @click="store.commit('toggleLocalAudioMute')">
+                    <v-btn class="margin active-button" icon @click="store.commit('toggleLocalAudioMute')">
                         <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
                     </v-btn>
-                    <v-btn class="margin button align-right" :class="pageNumber === lastPage ? 'inactive-button' : 'active-button'" icon @click="nextPage">
+                    <v-btn class="margin align-right" :class="pageNumber === lastPage ? 'inactive-button' : 'active-button'" icon @click="nextPage">
                         <i class="center icon-caret-right-md"/>
                     </v-btn>
                 </div>
@@ -51,7 +51,9 @@
                         <div class="chat-body">
                             <div
                             v-for="value in messages">
-                                {{ value.user }}: {{ value.message }}
+                                <div class="chat-message" :class="value.user === store.state.displayName ? 'my-chat' : 'other-chat'">
+                                    {{ value.user }}: {{ value.message }}
+                                </div>
                             </div>
                         </div>
                         <div class="basic-flex">
@@ -163,10 +165,10 @@
 
     const lastPage = computed(() => {
         if (store.state.pinLocal) {
-            return remoteCounter.value
+            return remoteCounter.value - 1
         }
         else {
-            return Math.ceil((remoteCounter.value + 1) / maxDisplayVideo)
+            return Math.ceil((remoteCounter.value) / maxDisplayVideo)
         }
     })
 
@@ -346,6 +348,9 @@
                 audioStream,
                 videoStream
             );
+            if (remoteCounter.value === 1) {
+                store.commit('setVideoList', [{connection: connection, media: remoteMedia, index: remoteCounter.value, displayName: remoteConnectionInfo.getUserAlias()}])
+            }
             // Store the downstream connection and its components.
             downstreamConnections.value[connection.getId()] = {connection: connection, media: remoteMedia, index: remoteCounter.value++, displayName: remoteConnectionInfo.getUserAlias()};
             
@@ -488,9 +493,17 @@
         position: absolute;
         bottom: 10px;
         width: 100%
+    
     }
-    .button {
+    .active-button {
         color: white;
+        background-color: rgba(3,1,28,.8);
+        font-size: 28px;
+        height: 40px;
+        width: 40px;
+    }
+    .inactive-button {
+        color: grey;
         background-color: rgba(3,1,28,.8);
         font-size: 28px;
         height: 40px;
@@ -550,5 +563,19 @@
     }
     .align-right {
         margin-left: auto;
+    }
+    .chat-message {
+    margin: 5px;
+    border-radius: 5px;
+    padding: 3px;
+    width: fit-content;
+    color: white;
+    }
+    .my-chat {
+        background-color: rgb(0, 157, 255);
+        margin-left: auto;
+    }
+    .other-chat {
+        background-color: rgb(64, 156, 64);
     }
   </style>
