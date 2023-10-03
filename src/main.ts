@@ -16,7 +16,6 @@ import ls from 'fm.liveswitch'
 import { registerPlugins } from '@/plugins'
 
 import "./assets/css/liveswitch.css"
-import { LocalMedia } from '@liveswitch/sdk'
 
 // Create a new store instance.
 const store = createStore({
