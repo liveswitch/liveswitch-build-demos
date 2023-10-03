@@ -32,7 +32,9 @@ const store = createStore({
         activeAudioDevice: "",
         cameraList: new Array(),
         microphoneList: new Array(),
-        speakerList: new Array()
+        speakerList: new Array(),
+        pinLocal: false,
+        videoList: new Array(),
       }
     },
     mutations: {
@@ -59,6 +61,12 @@ const store = createStore({
       },
       setActiveAudioDevice (state, deviceId) {
         state.activeAudioDevice = deviceId
+      },
+      setPinLocal (state, pinLocal) {
+        state.pinLocal = pinLocal;
+      },
+      setVideoList(state, videoList) {
+        state.videoList = videoList;
       },
       toggleLocalAudioMute (state) {
         state.audioMuted = !state.audioMuted;

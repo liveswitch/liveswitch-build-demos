@@ -129,7 +129,6 @@
     let channel: ls.Channel | null = null;
     let client : ls.Client | null = null;
 
-    let upstreamConnection: Ref<ls.SfuUpstreamConnection | undefined> = ref(undefined);
     let downstreamConnections: Ref<{ [id: string] : 
         {connection: ls.SfuDownstreamConnection, media: ls.RemoteMedia, index: number, displayName: string }}> = ref({});
 

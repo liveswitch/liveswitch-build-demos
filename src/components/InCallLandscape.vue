@@ -5,7 +5,7 @@
                 <div class="video-container">
                     <div>
                         <Video
-                            :userCount=2
+                            v-if="store.state.localMedia && showLocal"
                             ask-height="265px"
                             ask-width="280px"
                             :local-video="store.state.localMedia"
@@ -13,26 +13,31 @@
                     </div>
                     <div>
                         <Video
-                            :userCount=2
+                            v-if="store.state.videoList"
+                            v-for="value in store.state.videoList"
+                            :remoteVideo="value.media"
+                            :index="value.index"
+                            :userName="value.displayName"
+                            :connection="value.connection"
                             ask-height="265px"
                             ask-width="280px"
-                            userName="User 2"></Video>
+                            :maxIndex=maxDisplayVideo></Video>
                     </div>
                 </div>
                 <div class="controls-container">
-                    <v-btn class="margin button align-left" icon>
+                    <v-btn class="margin button align-left" :class="pageNumber === 1 ? 'inactive-button' : 'active-button'" icon @click="prevPage">
                         <i class="center icon-caret-left-md"/>
                     </v-btn>
-                    <v-btn class="margin button" icon>
+                    <!-- <v-btn class="margin button" icon>
                         <i class="center icon-flip-camera"/>
-                    </v-btn>
+                    </v-btn> -->
                     <v-btn class="margin button" icon @click="store.commit('toggleLocalVideoMute')">
                         <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
                     </v-btn>
                     <v-btn class="margin button" icon @click="store.commit('toggleLocalAudioMute')">
                         <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
                     </v-btn>
-                    <v-btn class="margin button align-right" icon>
+                    <v-btn class="margin button align-right" :class="pageNumber === lastPage ? 'inactive-button' : 'active-button'" icon @click="nextPage">
                         <i class="center icon-caret-right-md"/>
                     </v-btn>
                 </div>
@@ -44,10 +49,21 @@
                             <h3>Chat</h3>
                         </div>
                         <div class="chat-body">
+                            <div
+                            v-for="value in messages">
+                                {{ value.user }}: {{ value.message }}
+                            </div>
                         </div>
                         <div class="basic-flex">
-                            <v-text-field class="chat-input">Enter Text</v-text-field>
-                            <v-btn class="chat-button">Send</v-btn>
+                            <v-text-field
+                            label="Chat Message"
+                            clearable
+                            class="chat-input"
+                            hide-details="auto"
+                            v-model="chatMessage"></v-text-field>
+                            <v-btn
+                            class="chat-button"
+                            @click="sendChat">Send</v-btn>
                         </div>
                 </div>
             </div>
@@ -56,7 +72,7 @@
             <v-img src="@/assets/logoSmall.png" class="logo"/>
             <span class="center user-container">
                 <i class="icon-users users"/>
-                4
+                {{ remoteCounter }}
             </span>
             <v-menu :close-on-content-click="false" location="left">
                 <template v-slot:activator="{props}">
@@ -112,7 +128,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { Ref,ref,onMounted } from "vue";
+    import { Ref,ref,onMounted,computed } from "vue";
     import { useRouter } from "vue-router";
     import Video from "./Video.vue"
     import { useStore } from 'vuex'
@@ -132,13 +148,63 @@
     let channel: ls.Channel | null = null;
     let client : ls.Client | null = null;
 
-    let upstreamConnection: Ref<ls.SfuUpstreamConnection | undefined> = ref(undefined);
     let downstreamConnections: Ref<{ [id: string] : 
         {connection: ls.SfuDownstreamConnection, media: ls.RemoteMedia, index: number, displayName: string }}> = ref({});
 
     const chatMessage: Ref<string> = ref("");
     let messages: Ref<{user: string, message: string}[]> = ref([]);
 
+    const pageNumber : Ref<number> = ref(1);
+    const maxDisplayVideo = 2;
+
+    const showLocal = computed(() => {
+        return store.state.pinLocal || pageNumber.value === 1;
+    })
+
+    const lastPage = computed(() => {
+        if (store.state.pinLocal) {
+            return remoteCounter.value
+        }
+        else {
+            return Math.ceil((remoteCounter.value + 1) / maxDisplayVideo)
+        }
+    })
+
+    function nextPage () {
+        if ((pageNumber.value * maxDisplayVideo) - 1 < remoteCounter.value ) {
+            pageNumber.value++;
+            updateVideoLayout()
+        }
+    }
+
+    function prevPage () {
+        if (pageNumber.value > 1) {
+            pageNumber.value--;
+            updateVideoLayout();
+        }
+    }
+
+    function updateVideoLayout () {
+        let videoList = new Array();
+        if (store.state.pinLocal || pageNumber.value === 1) {
+            for (let key in downstreamConnections.value) {
+                let remoteMedia = downstreamConnections.value[key];
+                if (remoteMedia.index === pageNumber.value) {
+                    videoList.push(remoteMedia)
+                }
+            }
+        }
+        else {
+            for (let key in downstreamConnections.value) {
+                let remoteMedia = downstreamConnections.value[key];
+                //this need to be modulo math for scenarios > 2
+                if (remoteMedia.index === ((pageNumber.value * maxDisplayVideo) - maxDisplayVideo) || remoteMedia.index === ((pageNumber.value * maxDisplayVideo) - 1)) {
+                    videoList.push(remoteMedia)
+                }
+            }
+        }
+        store.commit('setVideoList', videoList)
+    }
 
     // handler function for leave button
     function leaveCall() {

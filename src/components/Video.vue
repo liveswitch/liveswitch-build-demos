@@ -8,7 +8,14 @@
             </div>
         </div>
         <div class="video-overlay" :style="pinStyle">
-            <v-switch class="margin pin-switch" label="Pin" color="blue" style="color: white;" v-if="userName == 'Me'" hide-details="auto"></v-switch>
+            <v-switch
+            class="margin pin-switch"
+            label="Pin"
+            color="blue"
+            style="color: white;"
+            v-if="userName == 'Me'"
+            v-model="pinLocal"
+            ide-details="auto"></v-switch>
             <v-btn class="display-label" :style="labelStyle" v-if="userName">{{userName}}</v-btn>
         </div>
     </div>
@@ -18,6 +25,7 @@
     import { StyleValue, toRef, watch, Ref, ref, onMounted } from "vue";
     import { useDisplay } from 'vuetify'
     import ls from 'fm.liveswitch'
+    import { useStore } from 'vuex'
     
     // incoming props for this component
     const props = defineProps({
@@ -45,11 +53,18 @@
         index: {
             type: Number
         },
+        maxIndex: {
+            type: Number
+        },
         // remote connection to properly update UI
         connection: {
             type: ls.SfuDownstreamConnection
         }
 	});
+
+    const store = useStore();
+
+    const pinLocal : Ref<boolean> = ref(false);
 
     // setup media as refs
     const localMedia = toRef(props, 'localVideo');
@@ -73,6 +88,10 @@
     // once we have a value for local media, we should render it to the screen
     watch(localMedia, async () => {
         insertVideo()
+    });
+
+    watch(pinLocal, () => {
+        store.commit('setPinLocal', pinLocal.value);
     })
 
     // attempt to insert video once UI is mounted
@@ -98,11 +117,20 @@
             else if (remoteMedia.value && props.index) {
                 // get UI element from media
                 videoNode = remoteMedia.value.getView();
+                let insertPosition = props.index;
+                if (props.maxIndex && insertPosition > props.maxIndex - 1) {
+                    if (store.state.pinLocal) {
+                        insertPosition = 1;
+                    }
+                    else {
+                        insertPosition = insertPosition % props.maxIndex
+                    }
+                }
                 // get first child since video element will need to be first child
                 // we will use the index here since there are potentially multiple remote video tiles
-                firstChild = videoContainer[props.index].childNodes[0]
+                firstChild = videoContainer[insertPosition].childNodes[0]
                 // perform insert of video element
-                videoContainer[props.index].insertBefore(videoNode, firstChild)
+                videoContainer[insertPosition].insertBefore(videoNode, firstChild)
             }
         }
         // add listeners for local mute states
