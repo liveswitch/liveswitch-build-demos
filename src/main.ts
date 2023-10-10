@@ -151,7 +151,7 @@ const store = createStore({
   })
   
   
-// ls.Log.registerProvider(new ls.ConsoleLogProvider(ls.LogLevel.Debug));
+ls.Log.registerProvider(new ls.ConsoleLogProvider(ls.LogLevel.Debug));
 
 const app = createApp(App)
 

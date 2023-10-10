@@ -96,15 +96,10 @@
     const channelId : Ref<string> = ref(Math.floor(Math.random() * 100000).toString());
     updateURL();
       
-    watch(displayName, async () => {
-      updateURL()
-    });
-    watch(channelId, async () => {
-      updateURL()
-    });
+    watch(channelId, updateURL);
 
     function updateURL() {
-      router.push({name: 'Lobby', params: {displayName: displayName.value, channelId: channelId.value}})
+      router.push({name: 'Lobby', params: { channelId: channelId.value}})
     }
 
     // handler that validates form and switches to inCall screen
