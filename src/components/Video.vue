@@ -103,6 +103,14 @@
         //get video container element
         const videoContainer = document.getElementsByClassName("video-wrapper");
         if (videoContainer && videoContainer[0]) {
+            // make sure not to double insert a video
+            for (let childIndex in videoContainer[0].childNodes) {
+                const child = videoContainer[0].childNodes[childIndex] as HTMLElement
+                if (child.classList?.contains("fm-video")) {
+                    console.log("Video already inserted");
+                    return;
+                }
+            }
             let videoNode;
             let firstChild;
             // handle local case

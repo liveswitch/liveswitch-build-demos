@@ -80,8 +80,9 @@
     import { useRouter } from "vue-router";
     import Video from "./Video.vue";
     import ls from 'fm.liveswitch';
-    import { Ref, onMounted, ref } from "vue";
+    import { Ref, onMounted, ref, watch } from "vue";
     import { useStore } from 'vuex';
+    import * as mnemonicId from 'mnemonic-id'
 
     // setup some global access
     const store = useStore();
@@ -91,8 +92,20 @@
     // let localMedia : Ref<ls.LocalMedia | undefined> = ref(undefined);
 
     // setup input values
-    const displayName : Ref<String> = ref("");
-    const channelId : Ref<String> = ref("");
+    const displayName : Ref<string> = ref(mnemonicId.createNameId());
+    const channelId : Ref<string> = ref(Math.floor(Math.random() * 100000).toString());
+    updateURL();
+      
+    watch(displayName, async () => {
+      updateURL()
+    });
+    watch(channelId, async () => {
+      updateURL()
+    });
+
+    function updateURL() {
+      router.push({name: 'Lobby', params: {displayName: displayName.value, channelId: channelId.value}})
+    }
 
     // handler that validates form and switches to inCall screen
     async function joinCall(this: any, event: any) {

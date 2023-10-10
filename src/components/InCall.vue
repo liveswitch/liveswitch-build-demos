@@ -98,6 +98,7 @@
                     class="margin chat-input"
                     hide-details="auto"
                     v-model="chatMessage"
+                    @keydown.enter.prevent="sendChat"
                     ></v-text-field>
                     <v-btn
                         class="chat-button"
