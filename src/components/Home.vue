@@ -77,7 +77,7 @@
 
 <script setup lang="ts">
     import "../assets/css/liveswitch.css";
-    import { useRouter } from "vue-router";
+    import { useRouter, useRoute } from "vue-router";
     import Video from "./Video.vue";
     import ls from 'fm.liveswitch';
     import { Ref, onMounted, ref, watch } from "vue";
@@ -87,13 +87,22 @@
     // setup some global access
     const store = useStore();
     const router = useRouter();
+    const route = useRoute();
 
     // setup reactive variable for local media
     // let localMedia : Ref<ls.LocalMedia | undefined> = ref(undefined);
 
     // setup input values
     const displayName : Ref<string> = ref(mnemonicId.createNameId());
-    const channelId : Ref<string> = ref(Math.floor(Math.random() * 100000).toString());
+    const channelId : Ref<string> = ref("");
+
+    if (route.params.channelId) {
+      channelId.value = route.params.channelId as string;
+    }
+    else {
+      channelId.value = Math.floor(Math.random() * 100000).toString()
+    }
+
     updateURL();
       
     watch(channelId, updateURL);

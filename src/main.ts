@@ -101,6 +101,24 @@ const store = createStore({
           localMedia.setVideoMuted(state.videoMuted)
         }
       },
+      toggleVideoMute (state, media) {
+        if (media instanceof ls.LocalMedia) {
+          this.toggleLocalVideoMute(state);
+        }
+        else {
+          const remoteMedia = media as ls.RemoteMedia;
+          remoteMedia.setVideoMuted(!remoteMedia.getVideoMuted());
+        }
+      },
+      toggleAudioMute (state, media) {
+        if (media instanceof ls.LocalMedia) {
+          this.toggleLocalAudioMute(state);
+        }
+        else {
+          const remoteMedia = media as ls.RemoteMedia;
+          remoteMedia.setAudioMuted(!remoteMedia.getAudioMuted());
+        }
+      },
       changeCamera (state, deviceId) {
         if (state.localMedia) {
           const localMedia = state.localMedia as ls.LocalMedia

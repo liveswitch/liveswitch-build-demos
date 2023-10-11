@@ -3,8 +3,8 @@
         <div class="video-overlay" style="background-color: #03011d; opacity: 60%;"></div>
         <div class="video-overlay" style="justify-content: center;">
             <div class="video-controls">
-                <i class="margin icon" :class="cameraMuted ? 'icon-video-slash' : 'icon-video'"/>
-                <i class="margin icon"  :class="micMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
+                <i class="margin icon" :class="cameraMuted ? 'icon-video-slash' : 'icon-video'" @click="toggleVideoMute"/>
+                <i class="margin icon"  :class="micMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'" @click="toggleAudioMute"/>
             </div>
         </div>
         <div class="video-overlay" :style="pinStyle">
@@ -98,23 +98,33 @@
     onMounted(() => {
         insertVideo()
     })
+
+    const toggleVideoMute = function () {
+        store.commit('toggleVideoMute', localMedia.value ? localMedia.value : remoteMedia.value)
+        cameraMuted.value = !cameraMuted.value
+    }
+
+    const toggleAudioMute = function () {
+        store.commit('toggleAudioMute', localMedia.value ? localMedia.value : remoteMedia.value)
+        micMuted.value = !micMuted.value
+    }
         
     const insertVideo = function () {
         //get video container element
         const videoContainer = document.getElementsByClassName("video-wrapper");
         if (videoContainer && videoContainer[0]) {
-            // make sure not to double insert a video
-            for (let childIndex in videoContainer[0].childNodes) {
-                const child = videoContainer[0].childNodes[childIndex] as HTMLElement
-                if (child.classList?.contains("fm-video")) {
-                    console.log("Video already inserted");
-                    return;
-                }
-            }
             let videoNode;
             let firstChild;
             // handle local case
             if (localMedia.value) {
+                // make sure not to double insert a video
+                for (let childIndex in videoContainer[0].childNodes) {
+                    const child = videoContainer[0].childNodes[childIndex] as HTMLElement
+                    if (child.classList?.contains("fm-video")) {
+                        console.log("Video already inserted");
+                        return;
+                    }
+                }
                 // get UI element from media
                 videoNode = localMedia.value.getView();
                 // get first child since video element will need to be first child
@@ -126,6 +136,15 @@
                 // get UI element from media
                 videoNode = remoteMedia.value.getView();
                 let insertPosition = props.index;
+
+                // make sure not to double insert a video
+                for (let childIndex in videoContainer[insertPosition].childNodes) {
+                    const child = videoContainer[insertPosition].childNodes[childIndex] as HTMLElement
+                    if (child.classList?.contains("fm-video")) {
+                        console.log("Video already inserted");
+                        return;
+                    }
+                }
                 if (props.maxIndex && insertPosition > props.maxIndex - 1) {
                     if (store.state.pinLocal) {
                         insertPosition = 1;
@@ -177,6 +196,7 @@
 		bottom: 0;
 		border-radius: 0 0 15px 15px;
 		height: 100%;
+        z-index: 100
 	}
     .video {
         border-radius: 15px;
