@@ -154,6 +154,10 @@
         }
         // handle local connection
         leaveAsync();
+
+        media.stop();
+        media.destroy();
+        store.commit('resetStore');
         // switch back to home page
         router.push('/');
     }

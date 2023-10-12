@@ -164,6 +164,21 @@ const store = createStore({
               console.error(ex)
           });
         }
+      },
+      resetStore (state) {
+        state.localMedia = null;
+        state.upstreamConnection = null;
+        state.channelId = "";
+        state.displayName = "";
+        state.audioMuted = false;
+        state.videoMuted = false;
+        state.activeVideoDevice = "";
+        state.activeAudioDevice = "";
+        state.cameraList = new Array();
+        state.microphoneList = new Array();
+        state.speakerList = new Array();
+        state.pinLocal = false
+        state.videoList = new Array();
       }
     }
   })
