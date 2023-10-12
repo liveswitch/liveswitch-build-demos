@@ -16,7 +16,9 @@
                 v-if="store.state.localMedia"
                 class="video"
                 :local-video="store.state.localMedia"
-                userName="Me"> </Video>
+                userName="Me"
+                :askHeight="videoDimensions"
+                :askWidth="videoDimensions"> </Video>
                 <Video
                 v-if="downstreamConnections"
                 class="video"
@@ -24,7 +26,9 @@
                 :remoteVideo="value.media"
                 :index="value.index"
                 :userName="value.displayName"
-                :connection="value.connection"> </Video>
+                :connection="value.connection"
+                :askHeight="videoDimensions"
+                :askWidth="videoDimensions"> </Video>
             </div>
         </div>
         <div class="right-column">
@@ -112,7 +116,7 @@
 </template>
   
 <script lang="ts" setup>
-    import { Ref,ref,onMounted } from "vue";
+    import { Ref,ref,onMounted, watch } from "vue";
     import { useRouter } from "vue-router";
     import Video from "./Video.vue"
     import { useStore } from 'vuex'
@@ -127,6 +131,14 @@
     const activeSpeaker: Ref<string> = ref("");
 
     const remoteCounter : Ref<number> = ref(1);
+
+    let videoDimensions: Ref<string> = ref("100%");
+
+    watch(remoteCounter, function () {
+        const maxRowTiles = Math.ceil(Math.sqrt(remoteCounter.value));
+        const percentage = 100 / maxRowTiles;
+        videoDimensions.value = 'calc(' + percentage + '% - ' + maxRowTiles * 5 + 'px)';
+    })
 
     const media : ls.LocalMedia = store.state.localMedia;
     let channel: ls.Channel | null = null;
