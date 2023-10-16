@@ -79,18 +79,20 @@
     import "../assets/css/liveswitch.css";
     import { useRouter, useRoute } from "vue-router";
     import Video from "./Video.vue";
-    import ls from 'fm.liveswitch';
-    import { Ref, onMounted, ref, watch } from "vue";
+    import liveSwitch from 'fm.liveswitch';
+    import { Ref, onMounted, ref, watch, inject } from "vue";
     import { useStore } from 'vuex';
     import * as mnemonicId from 'mnemonic-id'
+
+    const liveSwitchPlugin: any = inject('liveSwitch');
 
     // setup some global access
     const store = useStore();
     const router = useRouter();
     const route = useRoute();
-
+  
     // setup reactive variable for local media
-    // let localMedia : Ref<ls.LocalMedia | undefined> = ref(undefined);
+    let localMedia : Ref<liveSwitch.LocalMedia | undefined> = ref(undefined);
 
     // setup input values
     const displayName : Ref<string> = ref(mnemonicId.createNameId());
@@ -127,12 +129,13 @@
     }
 
     onMounted(async () => {
-      const media = new ls.LocalMedia(true, true)
-      await media.start()
-      onLocalMediaReady(media)
+      const media = await liveSwitchPlugin.startLocalMedia();
+      localMedia.value = media;
+      store.commit('setLocalMedia', media)
+      onLocalMediaReady(media);
       
     })
-    const onLocalMediaReady = function (media: ls.LocalMedia) {
+    const onLocalMediaReady = function (media: liveSwitch.LocalMedia) {
       store.commit('setLocalMedia', media)
 
       store.commit('populateCameraList')

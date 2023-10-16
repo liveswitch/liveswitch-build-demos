@@ -16,6 +16,7 @@ import ls from 'fm.liveswitch'
 import { registerPlugins } from '@/plugins'
 
 import "./assets/css/liveswitch.css"
+import SDKPlugin from './SDKPlugin'
 
 // Create a new store instance.
 const store = createStore({
@@ -189,6 +190,8 @@ ls.Log.registerProvider(new ls.ConsoleLogProvider(ls.LogLevel.Debug));
 const app = createApp(App)
 
 app.use(store)
+
+app.use(SDKPlugin);
 
 registerPlugins(app)
 

@@ -71,15 +71,8 @@
     const remoteMedia = toRef(props, 'remoteVideo');
 
     // if no height or width is passed in use defaults
-    var calcHeight = toRef(props, 'askHeight')
-    var calcWidth = toRef(props, 'askWidth')
-
-    if (!calcHeight.value) {
-        calcHeight.value = "375px";
-    }
-    if (!calcWidth.value) {
-        calcWidth.value = "640px";
-    }
+    const calcHeight = toRef(props, 'askHeight', "375px")
+    const calcWidth = toRef(props, 'askWidth', "640px")
 
     // establish reactive muted states
     const cameraMuted: Ref<boolean> = ref(false);
