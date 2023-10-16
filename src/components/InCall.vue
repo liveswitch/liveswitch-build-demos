@@ -123,35 +123,31 @@
     import liveSwitch from 'fm.liveswitch'
     import { DownstreamData } from '../SDKPlugin'
     
-
     const store = useStore();
     const router = useRouter();
-
     const liveSwitchPlugin: any = inject('liveSwitch');
 
-    let speakerList: Ref<{name: string, id: string}[]> = ref([]);
+    let client : liveSwitch.Client | null = null;
+    let channel: liveSwitch.Channel | null = null;
+    const media : liveSwitch.LocalMedia = store.state.localMedia;
+
+    let downstreamConnections: Ref<{ [id: string] : DownstreamData}> = ref({});
 
     const activeSpeaker: Ref<string> = ref("");
+    let speakerList: Ref<{name: string, id: string}[]> = ref([]);
 
     const remoteCounter : Ref<number> = ref(1);
-
     let videoDimensions: Ref<string> = ref("100%");
+
+
+    const chatMessage: Ref<string> = ref("");
+    let messages: Ref<{user: string, message: string}[]> = ref([]);
 
     watch(remoteCounter, function () {
         const maxRowTiles = Math.ceil(Math.sqrt(remoteCounter.value));
         const percentage = 100 / maxRowTiles;
         videoDimensions.value = 'calc(' + percentage + '% - ' + maxRowTiles * 5 + 'px)';
     })
-
-    const media : liveSwitch.LocalMedia = store.state.localMedia;
-    let channel: liveSwitch.Channel | null = null;
-    let client : liveSwitch.Client | null = null;
-
-    let downstreamConnections: Ref<{ [id: string] : DownstreamData}> = ref({});
-
-    const chatMessage: Ref<string> = ref("");
-    let messages: Ref<{user: string, message: string}[]> = ref([]);
-
 
     // handler function for leave button
     async function leaveCall() {
