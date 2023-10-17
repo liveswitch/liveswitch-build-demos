@@ -11,17 +11,13 @@ export interface DownstreamData {
 export default {
     install: (app:any) => {
 
-        const customLog = (message: string) => {
-            console.log("Oliver says: " + message);
-        };
-
         const startLocalMedia = async () => {
             const localMedia = new ls.LocalMedia(true, true)
             await localMedia.start()
             return localMedia;
         }
 
-    const registerClient = async (displayName: string, channelId: string): Promise<ls.Client> => {
+        const registerClient = async (displayName: string, channelId: string): Promise<ls.Client> => {
             // Create a client.
             const client = new ls.Client(config.gatewayUrl, config.applicationId);
             // set display name
@@ -170,6 +166,34 @@ export default {
             localMedia.stop();
         }
 
-        app.provide('liveSwitch', {customLog, startLocalMedia, registerClient, getChannel, openSfuUpstreamConnection, createDownStreamOpenHandler, createDownStreamCloseHandler, disconnectFromMeeting, sendChat, addIncomingChatHandler});
+        const getAudioSink = (deviceId: string, connection: DownstreamData) => {            
+            return connection.remoteMedia.getAudioSinkOutputs().then(function(outputs: any){
+                return outputs.find((x: ls.SinkOutput)=>{
+                    if (x.getId() === deviceId) {
+                        return x;
+                    }
+                });
+            });
+        }
+
+        const updateSpeaker = (downstreamConnections: Array<DownstreamData>, newSpeakerDevice: ls.SinkOutput) => {
+            for (let key in downstreamConnections) {
+                const connection: DownstreamData = downstreamConnections[key];
+                connection.remoteMedia.changeAudioSinkOutput(newSpeakerDevice);
+            }
+        }
+
+        app.provide('liveSwitch', {
+            startLocalMedia, 
+            registerClient, 
+            getChannel, 
+            openSfuUpstreamConnection, 
+            createDownStreamOpenHandler, 
+            createDownStreamCloseHandler, 
+            disconnectFromMeeting, 
+            sendChat, 
+            addIncomingChatHandler,
+            getAudioSink,
+            updateSpeaker});
     }
 }

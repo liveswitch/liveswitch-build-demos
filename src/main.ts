@@ -30,6 +30,7 @@ const store = createStore({
         videoMuted: false,
         activeVideoDevice: "",
         activeAudioDevice: "",
+        activeSpeakerDevice: "default",
         cameraList: new Array(),
         microphoneList: new Array(),
         speakerList: new Array(),
@@ -61,6 +62,9 @@ const store = createStore({
       },
       setActiveAudioDevice (state, deviceId) {
         state.activeAudioDevice = deviceId
+      },
+      setActiveSpeakerDevice (state, deviceId) {
+        state.activeSpeakerDevice = deviceId
       },
       setPinLocal (state, pinLocal) {
         state.pinLocal = pinLocal;
@@ -166,6 +170,15 @@ const store = createStore({
           });
         }
       },
+      populateSpeakerList (state, remoteMedia) {
+        remoteMedia.getAudioSinkOutputs().then(function(outputs: any){
+          state.speakerList = outputs.map((x: ls.SinkOutput)=>{
+              return { name: x.getName(), id: x.getId()}
+          })
+        }).fail(function(ex: any){
+            console.error(ex)
+        });
+      },
       resetStore (state) {
         state.localMedia = null;
         state.upstreamConnection = null;
@@ -175,6 +188,7 @@ const store = createStore({
         state.videoMuted = false;
         state.activeVideoDevice = "";
         state.activeAudioDevice = "";
+        state.activeSpeakerDevice = "default";
         state.cameraList = new Array();
         state.microphoneList = new Array();
         state.speakerList = new Array();

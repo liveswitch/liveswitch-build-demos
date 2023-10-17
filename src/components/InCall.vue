@@ -74,11 +74,11 @@
                     label="Speaker"
                     class="margin input"
                     hide-details="auto"
-                    v-if="speakerList.length > 0"
-                    :items="speakerList"
+                    v-if="store.state.speakerList.length > 0"
+                    :items="store.state.speakerList"
                     item-title="name"
                     item-value="id"
-                    v-model="activeSpeaker"
+                    v-model="store.state.activeSpeakerDevice"
                     @update:model-value="changeSpeaker"
                     ></v-select>
                 </div>
@@ -118,8 +118,8 @@
 <script lang="ts" setup>
     import { Ref,ref,onMounted, watch, inject } from "vue";
     import { useRouter } from "vue-router";
-    import Video from "./Video.vue"
     import { useStore } from 'vuex'
+    import Video from "./Video.vue"
     import liveSwitch from 'fm.liveswitch'
     import { DownstreamData } from '../SDKPlugin'
     
@@ -133,12 +133,8 @@
 
     let downstreamConnections: Ref<{ [id: string] : DownstreamData}> = ref({});
 
-    const activeSpeaker: Ref<string> = ref("");
-    let speakerList: Ref<{name: string, id: string}[]> = ref([]);
-
     const remoteCounter : Ref<number> = ref(1);
     let videoDimensions: Ref<string> = ref("100%");
-
 
     const chatMessage: Ref<string> = ref("");
     let messages: Ref<{user: string, message: string}[]> = ref([]);
@@ -159,8 +155,11 @@
         router.push('/');
     }
 
-    function changeSpeaker (value: any) {
-        debugger;
+    async function changeSpeaker (deviceId: string) {
+        const connectionId = Object.keys(downstreamConnections.value)[0];
+        const firstConnection: DownstreamData = downstreamConnections.value[connectionId];
+        const newSpeakerDevice = await liveSwitchPlugin.getAudioSink(deviceId, firstConnection);
+        liveSwitchPlugin.updateSpeaker(downstreamConnections.value, newSpeakerDevice);
     }
 
     function closeRemoteConnectionHandler (connection: liveSwitch.SfuDownstreamConnection) {
@@ -188,7 +187,21 @@
         let displayName = downstreamConnection.getRemoteConnectionInfo().getUserAlias();
         downstreamConnections.value[downstreamConnection.getId()] = {connection: downstreamConnection, remoteMedia: remoteMedia, index: remoteCounter.value++, displayName: displayName};
 
+        populateSpeakerList(remoteMedia);
+
         liveSwitchPlugin.createDownStreamCloseHandler(downstreamConnection, closeRemoteConnectionHandler)
+    }
+    
+    function chatHandler (message: string) {
+        var data = JSON.parse(message)
+        messages.value.push({user: data.from, message: data.text})
+    }
+
+    function populateSpeakerList (remoteMedia: liveSwitch.RemoteMedia) {
+        //seed the speaker list if we do not have one
+        if (store.state.speakerList.length === 0) {
+            store.commit('populateSpeakerList', remoteMedia);
+        }
     }
 
     onMounted(async () => {
@@ -216,11 +229,6 @@
         // add handler to respond to incoming messages
         liveSwitchPlugin.addIncomingChatHandler(channel, chatHandler);
     })
-
-    function chatHandler (message: string) {
-        var data = JSON.parse(message)
-        messages.value.push({user: data.from, message: data.text})
-    }
 </script>
 
 <style scoped>
