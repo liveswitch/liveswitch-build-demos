@@ -77,6 +77,7 @@
 
 <script setup lang="ts">
     import "../assets/css/liveswitch.css";
+    import "../assets/css/app.css";
     import { useRouter, useRoute } from "vue-router";
     import Video from "./Video.vue";
     import liveSwitch from 'fm.liveswitch';
@@ -150,70 +151,6 @@
     }
 </script>
 
-<style scoped>
-  .margin {
-    margin: 5px 10px 5px 10px;
-  }
-  .basic-flex {
-    display: flex;
-  }
-  .button {
-    height: 40px;
-    width: 40px;
-    color: white;
-    background-color: rgba(3,1,28,.8);
-    font-size: 24px;
-  }
-  .row {
-    display: flex;
-    flex-flow: row wrap;
-    align-items: center;
-  }
-  .col {
-    display: flex;
-    justify-content: center;
-  }
-  .header {
-    color: white;
-    width: fit-content;
-  }
-  .empty-video {
-    background-color: black;
-    border-radius: 15px;
-  }
-  .settings-menu {
-    width: 400px;
-    background-color: ghostwhite;
-    border-radius: 5px;
-    padding: 10px;
-  }
-  div.center {
-    margin-left: auto;
-    margin-right: auto;
-    width: fit-content;
-  }
-  button.center {
-    margin-left: auto;
-    margin-right: auto;
-    width: fit-content;
-  }
-  .logo {
-    height: 67px;
-    margin: 25px;
-  }
-  i.center {
-    margin-left: -7px;
-  }
-  .input {
-      flex-grow: 0;
-      width: 290px;
-  }
-  .fm-video {
-      width: 640px;
-      height: 480px;
-  }
-  .join-button {
-    color: white;
-    background-color: blue;
-  }
+<style>
+  @import '../assets/css/app.css';
 </style>

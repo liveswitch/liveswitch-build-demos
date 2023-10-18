@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="row">
     <v-form class="settings-menu" @submit="joinCall" @submit.prevent="joinCall">
       <div class="row">
         <v-text-field
@@ -127,81 +127,3 @@
     store.commit('setAudioMuted', media.getAudioMuted());
   }
 </script>
-
-<style scoped>
-  .margin {
-    margin: 5px 10px 5px 10px;
-  }
-  .container {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: center;
-  }
-  .header {
-    color: white;
-    position: absolute;
-    bottom: 0;
-  }
-  .settings-menu {
-    background-color: ghostwhite;
-    border-radius: 5px;
-    margin: 10px;
-    width: 310px;
-    display: flex;
-    flex-flow: column wrap;
-    padding: 5px 10px 10px 10px;
-  }
-  .button {
-    color: white;
-    background-color: rgba(3,1,28,.8);
-    font-size: 24px;
-    height: 36px;
-    width: 36px;
-    margin-top: 15px;
-    margin-bottom: 0px;
-  }
-  .join-button {
-    margin-top: 12px;
-    color: white;
-    background-color: blue;
-  }
-  div.center {
-    margin-left: auto;
-    margin-right: auto;
-    width: fit-content;
-  }
-  button.center {
-    margin-left: auto;
-    margin-right: auto;
-    width: fit-content;
-  }
-  .logo {
-    width: 185px;
-    height: 40px;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    margin-left: auto;
-    flex-grow: 0;
-  }
-  .short {
-    height: 42px;
-  }
-  .row {
-    display: flex;
-    margin: 5px 0px;
-  }
-  .row-center {
-    display: flex;
-    margin: 5px 0px;
-  }
-  i.center {
-    margin-left: -7px;
-  }
-  .input {
-    flex-grow: 0;
-    width:225px;
-  }
-  .relative {
-    position: relative;
-  }
-</style>

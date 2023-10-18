@@ -79,7 +79,8 @@
 </template>
 
 <script setup lang="ts">
-  import "../assets/css/liveswitch.css";
+  // import "../assets/css/liveswitch.css";
+  // import "../assets/css/app.css";
     import { useRouter } from "vue-router";
     import Video from "./Video.vue";
     import ls from 'fm.liveswitch';
@@ -134,71 +135,3 @@
       store.commit('setAudioMuted', media.getAudioMuted());
     }
 </script>
-
-<style scoped>
-  .col {
-    display: flex;
-    flex-flow: column wrap;
-    align-content: center;
-  }
-  .header {
-    color: white;
-    width: fit-content;
-    float: left;
-  }
-  .basic-flex {
-    display: flex;
-  }
-  .settings-menu {
-    background-color: ghostwhite;
-    border-radius: 5px;
-    margin: 10px;
-    width: 90%;
-    padding: 5px 10px;
-  }
-  .button {
-    color: white;
-    background-color: rgba(3,1,28,.8);
-    font-size: 24px;
-    height: 36px;
-    width: 36px;
-    margin-top: 20px;
-    margin-bottom: 0px;
-  }
-  .join-button {
-    color: white;
-    background-color: blue;
-  }
-  .margin {
-    margin: 10px;
-  }
-  div.center {
-    margin-left: auto;
-    margin-right: auto;
-    width: fit-content;
-  }
-  button.center {
-    margin-left: auto;
-    margin-right: auto;
-    width: fit-content;
-  }
-  .logo {
-    height: 40px;
-    margin-top: 5px;
-  }
-  .short {
-    height: 36px;
-  }
-  div.row {
-    margin-top: 5px;
-    margin-bottom: 5px;
-    display: flex;
-  }
-  i.center {
-    margin-left: -7px;
-  }
-  .input {
-    flex-grow: 0;
-    width: 210px;
-  }
-</style>

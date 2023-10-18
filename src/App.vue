@@ -8,4 +8,9 @@
 
 <script setup lang="ts">
   import { RouterView } from 'vue-router';
+  import './assets/css/app.css';
 </script>
+
+<style>
+  @import 'assets/css/app.css';
+</style>

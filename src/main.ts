@@ -16,6 +16,7 @@ import ls from 'fm.liveswitch'
 import { registerPlugins } from '@/plugins'
 
 import "./assets/css/liveswitch.css"
+import "./assets/css/app.css"
 import SDKPlugin from './SDKPlugin'
 
 // Create a new store instance.
