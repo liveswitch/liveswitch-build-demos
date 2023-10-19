@@ -1,6 +1,5 @@
 <template>
   <v-img src="@/assets/logo.svg" class="logo"/>
-  
   <div class="col">
       <div class="col">
         <div class="margin header">
@@ -15,8 +14,6 @@
             ></Video>
         </div>
       </div>
-    <!-- controls and input -->
-    
       <v-form class="settings-menu" @submit="joinCall" @submit.prevent="joinCall">
         <div class="row">
           <v-text-field
@@ -49,13 +46,12 @@
             class="margin button"
             icon
             @click="store.commit('toggleLocalVideoMute')">
-            <i class="center icon-video"/>
+            <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
           </v-btn>
         </div>
         <div class="row">
           <v-select
             label="Microphone"
-            style="margin-bottom: 15px;"
             class="margin short input"
             hide-details="auto"
             :items="store.state.microphoneList"
@@ -68,10 +64,10 @@
           class="margin button"
           icon
           @click="store.commit('toggleLocalAudioMute')">
-            <i class="center icon-audio-mic"/>
+          <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
           </v-btn>
         </div>
-        <div style="display: flex; justify-content: center;">
+        <div class="row">
           <v-btn class="margin center join-button" type="submit">Join</v-btn>
         </div>
       </v-form>
@@ -79,24 +75,41 @@
 </template>
 
 <script setup lang="ts">
-  // import "../assets/css/liveswitch.css";
-  // import "../assets/css/app.css";
-    import { useRouter } from "vue-router";
+    import { useRouter, useRoute } from "vue-router";
     import Video from "./Video.vue";
-    import ls from 'fm.liveswitch';
-    import { Ref, onMounted, ref } from "vue";
+    import liveSwitch from 'fm.liveswitch';
+    import { Ref, onMounted, ref, watch, inject } from "vue";
     import { useStore } from 'vuex';
+    import * as mnemonicId from 'mnemonic-id'
+
+    const liveSwitchPlugin: any = inject('liveSwitch');
 
     // setup some global access
     const store = useStore();
     const router = useRouter();
+    const route = useRoute();
 
     // setup reactive variable for local media
-    let localMedia : Ref<ls.LocalMedia | undefined> = ref(undefined);
+    let localMedia : Ref<liveSwitch.LocalMedia | undefined> = ref(undefined);
 
     // setup input values
-    const displayName : Ref<String> = ref("");
-    const channelId : Ref<String> = ref("");
+    const displayName : Ref<string> = ref(mnemonicId.createNameId());
+    const channelId : Ref<string> = ref("");
+
+    if (route.params.channelId) {
+      channelId.value = route.params.channelId as string;
+    }
+    else {
+      channelId.value = Math.floor(Math.random() * 100000).toString()
+    }
+
+    updateURL();
+      
+    watch(channelId, updateURL);
+
+    function updateURL() {
+      router.push({name: 'Lobby', params: { channelId: channelId.value}})
+    }
 
     // handler that validates form and switches to inCall screen
     async function joinCall(this: any, event: any) {
@@ -114,14 +127,13 @@
     }
 
     onMounted(async () => {
-      const media = new ls.LocalMedia(true, true)
-      await media.start()
-      onLocalMediaReady(media)
-      
-    })
-    const onLocalMediaReady = function (media: ls.LocalMedia) {
+      const media = await liveSwitchPlugin.startLocalMedia();
       localMedia.value = media;
-
+      store.commit('setLocalMedia', media)
+      onLocalMediaReady(media);
+    })
+    
+    const onLocalMediaReady = function (media: liveSwitch.LocalMedia) {
       store.commit('setLocalMedia', media)
 
       store.commit('populateCameraList')

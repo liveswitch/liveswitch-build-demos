@@ -61,7 +61,7 @@ i.center {
 }
 .join-button {
     color: white;
-    background-color: purple;
+    background-color: green;
 }
 div.row {
     margin-top: 5px;
@@ -75,7 +75,178 @@ div.row {
     display: flex;
     margin: 5px 0px;
 }
-
+.video {
+    margin: 5px
+}
+.logo-in-call {
+    height: 70px;
+    margin: 0px;
+}
+.video-grid {
+    display: flex;
+    width: 100%;
+    height: calc(100% - 200px);
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+}
+.chat-input {
+    flex-grow: 0;
+    width: 280px;
+}
+.container {
+    display: flex;
+    height: 100%;
+}
+.left-column {
+    width: calc(100% - 400px);
+}
+.right-column {
+    width: 400px;
+    padding-top: 125px;
+}
+.flex-center {
+    display: flex;
+    justify-content: center;
+}
+.row-spread {
+    display: flex;
+    justify-content: space-between;
+    margin: 0px 10px;
+}
+.user-counter {
+    color: white;
+    font-size: 24px;
+}
+.users {
+    color: white;
+    font-size: 28px;
+}
+.leave-button {
+    background-color: red;
+    color: white;
+}
+.chat-container {
+    background-color: ghostwhite;
+    border-radius: 5px;
+    margin: 10px;
+    height: 60%;
+    position: relative;
+    top: 20px;
+}
+.chat-header {
+    border-bottom: 2px solid black;
+}
+.chat-footer {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+}
+.chat-button {
+    float: right;
+    color: white;
+    background-color: blue;
+    position: absolute;
+    bottom: 5px;
+    right: 5px
+}
+.chat-message {
+    margin: 5px;
+    border-radius: 5px;
+    padding: 3px;
+    width: fit-content;
+    color: white;
+}
+.my-chat {
+    background-color: rgb(0, 157, 255);
+    margin-left: auto;
+}
+.other-chat {
+    background-color: rgb(64, 156, 64);
+}
+.activeTab {
+    font-weight: bold;
+}
+.column {
+    display: flex;
+    flex-flow: column wrap;
+}
+.spread {
+    display: flex;
+    justify-content: space-between;
+}
+.icon {
+    color: white;
+    background-color: #323b4b;
+    font-size: 24px;
+}
+.even-spacing {
+    display: flex;
+    flex-flow: column wrap;
+    justify-content: space-around;
+}
+.align-left {
+    margin-right: auto;
+}
+.align-right {
+   margin-left: auto;
+}
+span.center {
+    margin-left: auto;
+    margin-right: auto;
+    width: fit-content;
+}
+button.center {
+    margin-left: auto;
+    margin-right: auto;
+    width: fit-content;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+.video-margin {
+    margin: 0px 5px;
+}
+.video-controls {
+    position: absolute;
+    bottom: 0;
+    border-radius: 0 0 15px 15px;
+    height: 100%;
+    z-index: 100;
+    display: flex;
+    justify-content: space-around;
+}
+.video-wrapper {
+    border-radius: 5px;
+    position: relative;
+}
+.video-overlay {
+    display: flex;
+    flex-flow: row wrap;
+    align-content: center;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 15%;
+    border-radius: 0 0 15px 15px;
+}
+.icon-player {
+    color: white;
+    font-size: 40px;
+}
+.pin-switch {
+    flex-grow: 0;
+}
+div.fm-video {
+    width: 100% !important;
+    height: 100% !important;
+}
+video {
+    object-fit: cover !important;
+    border-radius: 15px;
+}
  @media (orientation: portrait) and (max-height: 1000px){
     .header {
         color: white;
@@ -110,7 +281,7 @@ div.row {
     }
     .join-button {
         color: white;
-        background-color: red;
+        background-color: blue;
     }
     .col {
         display: flex;
@@ -126,13 +297,116 @@ div.row {
         align-items: center;
         height: 56px;
     }
+    .logo-in-call {
+        height: 40px;
+        margin: 10px;
+    }
+    .row-in-call {
+        display: flex;
+        flex-flow: row wrap;
+    }
+    .settings-menu-in-call {
+        min-width: 300px;
+        margin: 5px;
+    }
+    .input-in-call {
+        width:275px;
+        flex: 0 1 auto;
+    }
+    .users-container {
+        color: white;
+        font-size: 24px;
+    }
+    .button-wrapper {
+        display: flex;
+        flex-flow: row wrap;
+        align-content: center;
+    }
+    .leave-button {
+        margin-left: auto;
+        background-color: red;
+        color: white;
+    }
+    .tab-container {
+        display: flex;
+        flex-flow: column wrap;
+        align-content: center;
+    }
+    .video-container {
+        display: flex;
+        margin: 10px 5px;
+        flex-direction: column;
+    }
+    .controls-container {
+        display: flex;
+        justify-content: space-between;
+        position: absolute;
+        bottom: 60px;
+        width: 90%
+    }
+    .active-button {
+        color: white;
+        background-color: rgba(3,1,28,.8);
+        font-size: 20px;
+        height: 36px;
+        width: 36px;
+    }
+    .inactive-button {
+        color: grey;
+        background-color: rgba(3,1,28,.8);
+        font-size: 20px;
+        height: 36px;
+        width: 36px;
+    }
+    .row-center {
+        display: flex;
+        justify-content: center;
+        width: fit-content;
+    }
+    .chat-container {
+        height: 545px;
+        background-color: white;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        margin-right: 3px;
+        margin-left: 3px;
+        width: 90%;
+    }
+    .chat-header {
+        border-bottom: 3px solid black;
+        display: flex;
+        justify-content: center;
+    }
+    .chat-body {
+        height: 450px;
+    }
+    .chat-footer {
+        display: flex;
+        position: relative;
+        flex-direction: row;
+        width: 100%;
+    }
+    .chat-input {
+        width: 230px;
+        flex: 0 1 auto;
+    }
+    .tab-buttons {
+        display: flex;
+        position: absolute;
+        bottom: 5px;
+        width: 100%;
+    }
+    .tabs {
+        width: 100%;
+        background-color: white;
+    }
 } 
 
 @media (orientation: landscape) and (max-width:1000px) {
     .join-button {
         margin-top: 12px;
         color: white;
-        background-color: green;
+        background-color: blue;
     }
     .input {
         flex-grow: 0;
@@ -176,5 +450,109 @@ div.row {
         display: flex;
         flex-flow: row;
         margin: 5px 0px;
-      }
-} 
+    }
+    .margin {
+        margin: 5px;
+    }
+    .logo-in-call {
+        height: 40px;
+        flex-grow: 0;
+    }
+    .container {
+        display: flex;
+        margin: 10px;
+    }
+    .tab-container {
+        width: 600px;
+        height: 340px;
+        position: relative;
+    }
+    .video-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        margin: 10px 10px 0px 10px;
+    }
+    .chat-container {
+        width: 600px;
+        height: 330px;
+        background-color: ghostwhite;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+    .controls-container {
+        display: flex;
+        flex-direction: row;
+        position: absolute;
+        bottom: 10px;
+        width: 100%
+    }
+    .active-button {
+        color: white;
+        background-color: rgba(3,1,28,.8);
+        font-size: 28px;
+        height: 40px;
+        width: 40px;
+    }
+    .inactive-button {
+        color: grey;
+        background-color: rgba(3,1,28,.8);
+        font-size: 28px;
+        height: 40px;
+        width: 40px;
+    }
+    .chat-body {
+        height: 240px;
+    }
+    .chat-input {
+        margin-left: 10px;
+        margin-right: 5px;
+    }
+    .chat-button {
+        margin: 5px;
+    }
+    .right-column {
+        display: flex;
+        flex-flow: column wrap;
+        justify-content: space-between;
+        align-content: center;
+    }
+    .users-container {
+        float: left;
+        color: white;
+        font-size: 24px;
+    }
+    .icon {
+        color: white;
+        background-color: #323b4b;
+        font-size: 28px;
+    }
+    .settings-menu-in-call {
+        min-width: 300px;
+        margin: 5px;
+    }
+    .input-in-call {
+        width: 275px;
+        flex: 0 1 auto;
+    }
+    .leave-button {
+        color: white;
+        background-color: red;
+        margin-bottom: 20px;
+    }
+}
+@media (max-width: 1000px) or (max-height: 1000px) {
+    .icon-player {
+        color: white;
+        font-size: 28px;
+    }
+    .pin-switch {
+        flex-grow: 0;
+        align-content: center;
+    }
+    button.display-label {
+        height: 80% !important;
+        border-radius: 15px;
+        margin-right: 10px;
+    }   
+}

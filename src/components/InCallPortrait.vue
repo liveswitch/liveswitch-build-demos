@@ -1,16 +1,16 @@
 <template>
     <div class="container">
         <div class="column">
-            <v-img src="@/assets/logo.svg" class="logo"/>
+            <v-img src="@/assets/logo.svg" class="logo-in-call"/>
             <div class="margin spread">
-                <div class="row">
+                <div class="row-in-call">
                     <v-menu :close-on-content-click="false" location="bottom">
                         <template v-slot:activator="{props}">
                             <v-btn v-bind="props" icon class="icon" flat>
                                 <i class="center icon-cog-gear"/>
                             </v-btn>
                         </template>
-                        <v-card class="settings-menu">
+                        <v-card class="settings-menu-in-call">
                             <v-list>
                                 <v-list-item>
                                     <h3>Settings</h3>
@@ -18,7 +18,7 @@
                                 <v-list-item>
                                     <v-select
                                         label="Camera"
-                                        class="margin input"
+                                        class="margin input-in-call"
                                         hide-details="auto"
                                         :items="store.state.cameraList"
                                         item-title="name"
@@ -29,7 +29,7 @@
                                 <v-list-item>
                                     <v-select
                                         label="Microphone"
-                                        class="margin input"
+                                        class="margin input-in-call"
                                         hide-details="auto"
                                         :items="store.state.microphoneList"
                                         item-title="name"
@@ -40,8 +40,14 @@
                                 <v-list-item>
                                     <v-select
                                         label="Speaker"
-                                        class="margin input"
-                                        hide-details="auto"></v-select>
+                                        class="margin input-in-call"
+                                        hide-details="auto"
+                                        v-if="store.state.speakerList.length > 0"
+                                        :items="store.state.speakerList"
+                                        item-title="name"
+                                        item-value="id"
+                                        v-model="store.state.activeSpeakerDevice"
+                                        @update:model-value="changeSpeaker"></v-select>
                                 </v-list-item>
                             </v-list>
                         </v-card>
@@ -86,9 +92,6 @@
                             <i class="center icon-caret-left-md"/>
                         </v-btn>
                         <div class="row-center">
-                            <!-- <v-btn class="margin active-button" icon>
-                                <i class="center icon-flip-camera"/>
-                            </v-btn> -->
                             <v-btn class="margin active-button" icon @click="store.commit('toggleLocalVideoMute')">
                                 <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
                             </v-btn>
@@ -138,52 +141,48 @@
 </template>
 
 <script lang="ts" setup>
-    import { Ref,ref,onMounted, computed, watch } from "vue";
+    import { Ref,ref,onMounted, watch, inject, computed } from "vue";
     import { useRouter } from "vue-router";
-    import Video from "./Video.vue"
     import { useStore } from 'vuex'
-    import ls from 'fm.liveswitch'
-    import config from '../../liveswitch_config.json'
-
+    import Video from "./Video.vue"
+    import liveSwitch from 'fm.liveswitch'
+    import { DownstreamData } from '../SDKPlugin'
+    
     const store = useStore();
     const router = useRouter();
+    const liveSwitchPlugin: any = inject('liveSwitch');
 
+    let client : liveSwitch.Client | null = null;
+    let channel: liveSwitch.Channel | null = null;
+    const media : liveSwitch.LocalMedia = store.state.localMedia;
+
+    let downstreamConnections: Ref<{ [id: string] : DownstreamData}> = ref({});
+
+    const remoteCounter : Ref<number> = ref(1);
+    let videoDimensions: Ref<string> = ref("100%");
+
+    const chatMessage: Ref<string> = ref("");
+    let messages: Ref<{user: string, message: string}[]> = ref([]);
+
+    const pageNumber : Ref<number> = ref(1);
     const maxDisplayVideo = 2;
+
+    const currentTab: Ref<String> = ref("GALLERY");
 
     const showLocal = computed(() => {
         return store.state.pinLocal || pageNumber.value === 1;
     })
     
     const lastPage = computed(() => {
-        let value = 1;
         if (store.state.pinLocal) {
-            value= remoteCounter.value - 1
+            return remoteCounter.value - 1
         }
         else {
-            value = Math.ceil((remoteCounter.value) / maxDisplayVideo)
+            return Math.ceil((remoteCounter.value) / maxDisplayVideo)
         }
-        // console.log("Last Page: " + value);
-        return value;
     })
 
     watch(store.state.pinLocal, updateVideoLayout);
-
-    let speakerList: Ref<{name: string, id: string}[]> = ref([]);
-
-    const activeSpeaker: Ref<string> = ref("");
-
-    const remoteCounter : Ref<number> = ref(1);
-    const pageNumber : Ref<number> = ref(1);
-
-    const media : ls.LocalMedia = store.state.localMedia;
-    let channel: ls.Channel | null = null;
-    let client : ls.Client | null = null;
-
-    let downstreamConnections: Ref<{ [id: string] : 
-        {connection: ls.SfuDownstreamConnection, media: ls.RemoteMedia, index: number, displayName: string }}> = ref({});
-
-    const chatMessage: Ref<string> = ref("");
-    let messages: Ref<{user: string, message: string}[]> = ref([]);
 
     function nextPage () {
         if ((pageNumber.value * maxDisplayVideo) - 1 < remoteCounter.value ) {
@@ -212,7 +211,6 @@
         else {
             for (let key in downstreamConnections.value) {
                 let remoteMedia = downstreamConnections.value[key];
-                //this need to be modulo math for scenarios > 2
                 if (remoteMedia.index === ((pageNumber.value * maxDisplayVideo) - maxDisplayVideo) || remoteMedia.index === ((pageNumber.value * maxDisplayVideo) - 1)) {
                     videoList.push(remoteMedia)
                 }
@@ -221,27 +219,40 @@
         store.commit('setVideoList', videoList)
     }
 
+    function switchTab(params: any) {
+        currentTab.value = params.target.innerText
+    }
+
+    watch(remoteCounter, function () {
+        const maxRowTiles = Math.ceil(Math.sqrt(remoteCounter.value));
+        const percentage = 100 / maxRowTiles;
+        videoDimensions.value = 'calc(' + percentage + '% - ' + maxRowTiles * 5 + 'px)';
+    })
+
     // handler function for leave button
-    function leaveCall() {
-        // loop through downstream connections we have a reference to
-        for (let key in downstreamConnections.value) {
-            //pull of the connection object
-            const dsConnection = downstreamConnections.value[key].connection;
-            // if the connection is not closed or in a state of closing, close it
-            if (dsConnection.getState() !== ls.ConnectionState.Closed.valueOf() || dsConnection.getState() !== ls.ConnectionState.Closing) {
-                dsConnection.close();
-            }
-            // remove the connection from out local list
-            delete downstreamConnections.value[key];
-        }
-        // handle local connection
-        leaveAsync();
+    async function leaveCall() {
+        await liveSwitchPlugin.disconnectFromMeeting(downstreamConnections.value, client, media);
+
+        media.destroy();
+        store.commit('resetStore');
         // switch back to home page
         router.push('/');
     }
 
-    function changeSpeaker (value: any) {
-        debugger;
+    async function changeSpeaker (deviceId: string) {
+        const connectionId = Object.keys(downstreamConnections.value)[0];
+        const firstConnection: DownstreamData = downstreamConnections.value[connectionId];
+        const newSpeakerDevice = await liveSwitchPlugin.getAudioSink(deviceId, firstConnection);
+        liveSwitchPlugin.updateSpeaker(downstreamConnections.value, newSpeakerDevice);
+    }
+
+    function closeRemoteConnectionHandler (connection: liveSwitch.SfuDownstreamConnection) {
+        const downstreamData = downstreamConnections.value[connection.getId()];
+        // delete the remote media
+        downstreamData.remoteMedia.destroy();
+        delete downstreamConnections.value[connection.getId()];
+        //update the video tile index counter
+        remoteCounter.value--;
     }
 
     // send button handler
@@ -251,25 +262,41 @@
             return;
         }
         // create message blob with necessary data
-        let dateObj = new Date();
-        var message = {
-            from: store.state.displayName, 
-            timestamp: (new Date().getTime()), 
-            timestampHourFormat: dateObj.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }),
-            timestampDateFormat: (dateObj.toLocaleString()),
-            text: chatMessage.value
-        }
-        // if we have a channel, send the message
-        if (channel) {
-            channel.sendMessage(JSON.stringify(message))
-        }
+        liveSwitchPlugin.sendChat(channel, store.state.displayName, chatMessage.value);
         // reset ref to clear input box
         chatMessage.value = "";
     }
 
+    function openDownStreamConnectionHandler (downstreamConnection: liveSwitch.SfuDownstreamConnection, remoteMedia: liveSwitch.RemoteMedia) {
+        let displayName = downstreamConnection.getRemoteConnectionInfo().getUserAlias();
+        downstreamConnections.value[downstreamConnection.getId()] = {connection: downstreamConnection, remoteMedia: remoteMedia, index: remoteCounter.value++, displayName: displayName};
+
+        populateSpeakerList(remoteMedia);
+
+        liveSwitchPlugin.createDownStreamCloseHandler(downstreamConnection, closeRemoteConnectionHandler)
+    }
+    
+    function chatHandler (message: string) {
+        var data = JSON.parse(message)
+        messages.value.push({user: data.from, message: data.text})
+    }
+
+    function populateSpeakerList (remoteMedia: liveSwitch.RemoteMedia) {
+        //seed the speaker list if we do not have one
+        if (store.state.speakerList.length === 0) {
+            store.commit('populateSpeakerList', remoteMedia);
+        }
+    }
+
     onMounted(async () => {
-        // wait to join until after UI has been rendered
-        await joinAsync();
+        // register client
+        client = await liveSwitchPlugin.registerClient(store.state.displayName, store.state.channelId);
+        // get active channel we connected to from the client
+        channel = await liveSwitchPlugin.getChannel(client);
+        // connect my local media to the conection
+        liveSwitchPlugin.openSfuUpstreamConnection(store.state.localMedia, channel);
+        // connect to others via downstream connections
+        liveSwitchPlugin.createDownStreamOpenHandler(channel, openDownStreamConnectionHandler);
 
         store.commit('setLocalMedia', media)
 
@@ -284,345 +311,6 @@
         store.commit('setAudioMuted', media.getAudioMuted());
 
         // add handler to respond to incoming messages
-        if (channel) {
-            channel.addOnMessage(function(sender, message){
-                // if(channel && channel.getClientId() == sender.getId()){
-                //     return;
-                // }
-                var data = JSON.parse(message)
-                console.log(message);
-                messages.value.push({user: data.from, message: data.text})
-            })
-        }
+        liveSwitchPlugin.addIncomingChatHandler(channel, chatHandler);
     })
-
-    // function that joins to a channel and session
-    async function joinAsync (this: any) {
-        const promise = new ls.Promise();
-
-        // Create a client.
-        client = new ls.Client(config.gatewayUrl, config.applicationId);
-        // set display name
-        client.setUserAlias(store.state.displayName);
-
-        // Generate a token (do this on the server to avoid exposing your shared secret).
-        const token = ls.Token.generateClientRegisterToken(
-            config.applicationId,
-            client.getUserId(),
-            client.getDeviceId(),
-            client.getId(),
-            [new ls.ChannelClaim(store.state.channelId)],
-            config.sharedSecret
-        );
-
-        // Register client with token.
-        client
-            .register(token)
-            .then((channels: any) => {
-                onClientRegistered(channels);
-                promise.resolve(null);
-            })
-            .fail((ex: any) => {
-                ls.Log.error("Failed to register with Gateway.");
-                promise.reject(ex);
-            });
-
-        return promise;
-    };
-
-    // handler called once the client has been registered
-    function onClientRegistered (this: any, channels: any) {
-        // Store our channel reference.
-        channel = channels[0];
-
-        // Open a new SFU upstream connection.
-        const upstreamConnection = openSfuUpstreamConnection(store.state.localMedia);
-        store.commit('setUpstreamConnection', upstreamConnection);
-
-        if (channel) {
-        // Open a new SFU downstream connection when a remote upstream connection is opened.
-            channel.addOnRemoteUpstreamConnectionOpen((remoteConnectionInfo) =>
-                openSfuDownstreamConnection(remoteConnectionInfo, channel)
-            );
-        }
-    };
-
-    // handle setting up the downstream connection
-    function openSfuDownstreamConnection (remoteConnectionInfo: ls.ConnectionInfo, channel: ls.Channel | null) {
-        // Create remote media.
-        const remoteMedia = new ls.RemoteMedia();
-        const audioStream = new ls.AudioStream(remoteMedia);
-        const videoStream = new ls.VideoStream(remoteMedia);
-        
-        if (channel) {
-            // Create a SFU downstream connection with remote audio and video.
-            const connection = channel.createSfuDownstreamConnection(
-                remoteConnectionInfo,
-                audioStream,
-                videoStream
-            );
-            if (remoteCounter.value === 1) {
-                store.commit('setVideoList', [{connection: connection, media: remoteMedia, index: remoteCounter.value, displayName: remoteConnectionInfo.getUserAlias()}])
-            }
-            // Store the downstream connection and its components.
-            downstreamConnections.value[connection.getId()] = {connection: connection, media: remoteMedia, index: remoteCounter.value++, displayName: remoteConnectionInfo.getUserAlias()};
-            
-            //seed the speaker list if we do not have one
-            if (speakerList.value.length === 0) {
-                remoteMedia.getAudioSinkOutputs().then(function(outputs: any){
-                    speakerList.value = outputs.map((x: ls.SourceInput)=>{
-                        //set default as active on the first pass
-                        if (x.getId() === "default") {
-                            activeSpeaker.value = x.getId();
-                        }
-                        return { name: x.getName(), id: x.getId()}
-                    })
-                }).fail(function(ex: any){
-                    console.error(ex)
-                });
-            }
-
-            connection.addOnStateChange((conn) => {
-                // Remove the remote media from the layout and destroy it if the remote is closed.
-                if (conn.getRemoteClosed()) {
-                    // remove connection from our list
-                    delete downstreamConnections.value[connection.getId()];
-                    // delete the remote media
-                    remoteMedia.destroy();
-                    //update the video tile index counter
-                    remoteCounter.value--;
-                }
-            });
-
-            // open connection now that our handlers have been set
-            connection.open();
-            return connection;
-        }
-    };
-
-    function openSfuUpstreamConnection (localMedia: ls.LocalMedia) {
-        // Create audio and video streams from local media.
-        const audioStream = new ls.AudioStream(localMedia);
-        const videoStream = new ls.VideoStream(localMedia);
-
-        //channel is required so exit if it is null
-        if (!channel) {
-            return;
-        }
-
-        // Create a SFU upstream connection with local audio and video.
-        const connection = channel.createSfuUpstreamConnection(
-            audioStream,
-            videoStream
-        );
-
-        // add logging for remote state
-        connection.addOnStateChange((conn) => {
-            ls.Log.debug(
-                `Upstream connection is ${new ls.ConnectionStateWrapper(
-                    conn.getState()
-                ).toString()}.`
-            );
-        });
-
-        // open connection now that handlers have been added
-        connection.open();
-        return connection;
-    };
-
-    // when leaving a meeting, this handles disconnecting from the client
-    function leaveAsync () {
-        if (client) {
-            return client
-                .unregister()
-                .fail(() => ls.Log.error("Unregistration failed."));
-        }
-    };
-
-    // Destructure only the keys you want to use
-    const currentTab: Ref<String> = ref("GALLERY");
-
-    function switchTab(params: any) {
-        currentTab.value = params.target.innerText
-    }
 </script>
-
-<style scoped>
-  .margin {
-    margin: 5px 10px 5px 10px;
-  }
-  div.center {
-    margin-left: auto;
-    margin-right: auto;
-    width: fit-content;
-  }
-  i.center {
-    margin-left: -5px;
-  }
-  .logo {
-    height: 40px;
-    margin: 10px;
-  }
-  .vcenter {
-    margin-top: auto;
-    margin-bottom: auto;
-  }
-  .activeTab {
-    font-weight: bold;
-  }
-  .container {
-    height: 100%;
-  }
-  .column {
-    display: flex;
-    flex-flow: column wrap;
-  }
-  .spread {
-    display: flex;
-    justify-content: space-between;
-  }
-  .row {
-    display: flex;
-    flex-flow: row wrap;
-  }
-  .icon {
-    color: white;
-    background-color: #323b4b;
-    font-size: 24px;
-  }
-  .settings-menu {
-    min-width: 300px;
-    margin: 5px;
-  }
-  .input {
-    width:275px;
-    flex: 0 1 auto;
-  }
-  .users-container {
-    color: white;
-    font-size: 24px;
-  }
-  .users {
-    color: white;
-    font-size: 28px;
-  }
-  .button-wrapper {
-    display: flex;
-    flex-flow: row wrap;
-    align-content: center;
-  }
-  .leave-button {
-    margin-left: auto;
-    background-color: red;
-    color: white;
-  }
-  .tab-container {
-    display: flex;
-    flex-flow: column wrap;
-    align-content: center;
-  }
-  .basic-flex {
-    display: flex;
-  }
-  .even-spacing {
-    display: flex;
-    flex-flow: column wrap;
-    justify-content: space-around;
-  }
-  .video-container {
-    display: flex;
-    margin: 10px 5px;
-    flex-direction: column;
-  }
-  .controls-container {
-    display: flex;
-    justify-content: space-between;
-    position: absolute;
-    bottom: 60px;
-    width: 90%
-  }
-  .active-button {
-    color: white;
-    background-color: rgba(3,1,28,.8);
-    font-size: 20px;
-    height: 36px;
-    width: 36px;
-  }
-  .inactive-button {
-    color: grey;
-    background-color: rgba(3,1,28,.8);
-    font-size: 20px;
-    height: 36px;
-    width: 36px;
-  }
-  .align-left {
-     margin-right: auto;
-  }
-  .align-right {
-    margin-left: auto;
-  }
-  .row-center {
-    display: flex;
-    justify-content: center;
-    width: fit-content;
-  }
-  .chat-container {
-    height: 545px;
-    background-color: white;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    margin-right: 3px;
-    margin-left: 3px;
-    width: 90%;
-  }
-  .chat-header {
-    border-bottom: 3px solid black;
-    display: flex;
-    justify-content: center;
-  }
-  .chat-body {
-    height: 450px;
-  }
-  .chat-footer {
-    display: flex;
-    position: relative;
-    flex-direction: row;
-    width: 100%;
-  }
-  .chat-input {
-    width: 230px;
-    flex: 0 1 auto;
-  }
-  .chat-button {
-    float: right;
-    color: white;
-    background-color: blue;
-    position: absolute;
-    bottom: 5px;
-    right: 5px
-  }
-  .tab-buttons {
-    display: flex;
-    position: absolute;
-    bottom: 5px;
-    width: 100%;
-  }
-  .tabs {
-    width: 100%;
-    background-color: white;
-  }
-  .chat-message {
-    margin: 5px;
-    border-radius: 5px;
-    padding: 3px;
-    width: fit-content;
-    color: white;
-  }
-  .my-chat {
-    background-color: rgb(0, 157, 255);
-    margin-left: auto;
-  }
-  .other-chat {
-    background-color: rgb(64, 156, 64);
-  }
-</style>

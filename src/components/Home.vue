@@ -1,7 +1,7 @@
 <template>
   <v-img src="@/assets/logo.svg" class="logo"/>
 
-  <div class="col">
+  <div class="col center">
     <div>
       <div>
         <div class="header margin"><h2>Preview</h2></div>
@@ -48,7 +48,7 @@
           <v-btn class="margin button"
             icon
             @click="store.commit('toggleLocalVideoMute')">
-            <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
+              <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
           </v-btn>
         </div>
         <div class="row">
@@ -64,7 +64,7 @@
           <v-btn class="margin button"
             icon
             @click="store.commit('toggleLocalAudioMute')">
-            <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
+              <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
           </v-btn>
         </div>
         <div class="row">
@@ -76,8 +76,6 @@
 </template>
 
 <script setup lang="ts">
-    import "../assets/css/liveswitch.css";
-    import "../assets/css/app.css";
     import { useRouter, useRoute } from "vue-router";
     import Video from "./Video.vue";
     import liveSwitch from 'fm.liveswitch';
@@ -136,6 +134,7 @@
       onLocalMediaReady(media);
       
     })
+
     const onLocalMediaReady = function (media: liveSwitch.LocalMedia) {
       store.commit('setLocalMedia', media)
 
@@ -150,7 +149,3 @@
       store.commit('setAudioMuted', media.getAudioMuted());
     }
 </script>
-
-<style>
-  @import '../assets/css/app.css';
-</style>

@@ -3,13 +3,13 @@
         <div class="video-overlay" style="background-color: #03011d; opacity: 60%;"></div>
         <div class="video-overlay" style="justify-content: center;">
             <div class="video-controls">
-                <i class="margin icon" :class="cameraMuted ? 'icon-video-slash' : 'icon-video'" @click="toggleVideoMute"/>
-                <i class="margin icon"  :class="micMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'" @click="toggleAudioMute"/>
+                <i class="video-margin icon-player" :class="cameraMuted ? 'icon-video-slash' : 'icon-video'" @click="toggleVideoMute"/>
+                <i class="video-margin icon-player"  :class="micMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'" @click="toggleAudioMute"/>
             </div>
         </div>
         <div class="video-overlay" :style="pinStyle">
             <v-switch
-            class="margin pin-switch"
+            class="video-margin pin-switch"
             label="Pin"
             color="blue"
             style="color: white;"
@@ -186,68 +186,3 @@
         }
     }
 </script>
-
-<style lang="scss">
-    .margin {
-        margin: 0px 5px;
-    }
-    .video-controls {
-		position: absolute;
-		bottom: 0;
-		border-radius: 0 0 15px 15px;
-		height: 100%;
-        z-index: 100
-	}
-    .video {
-        border-radius: 15px;
-        margin: 0 25px 0 0;
-    }
-    .video-wrapper {
-        border-radius: 5px;
-        position: relative;
-    }
-    .video-controls {
-        display: flex;
-        justify-content: space-around;
-    }
-    .video-overlay {
-        display: flex;
-        flex-flow: row wrap;
-        align-content: center;
-        position: absolute;
-        bottom: 0;
-        width: 100%;
-        height: 15%;
-        border-radius: 0 0 15px 15px;
-    }
-    .icon {
-        color: white;
-        font-size: 40px;
-    }
-    .pin-switch {
-        flex-grow: 0;
-    }
-    div.fm-video {
-        width: 100% !important;
-        height: 100% !important;
-    }
-    video {
-        object-fit: cover !important;
-        border-radius: 15px;
-    }
-    @media (max-width: 600px) or (max-height: 1000px) {
-        .icon {
-            color: white;
-            font-size: 28px;
-        }
-        .pin-switch {
-            flex-grow: 0;
-            align-content: center;
-        }
-        button.display-label {
-            height: 80% !important;
-            border-radius: 15px;
-            margin-right: 10px;
-        }   
-    }
-</style>

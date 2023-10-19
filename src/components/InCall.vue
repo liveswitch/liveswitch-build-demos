@@ -2,7 +2,7 @@
     <div class="container">
         <div class="left-column">
             <div class="flex-center">
-                <v-img src="@/assets/logo.svg" class="logo"/>
+                <v-img src="@/assets/logo.svg" class="logo-in-call"/>
             </div>
             <div class="row-spread">
                 <div class="user-counter">
@@ -33,7 +33,7 @@
         </div>
         <div class="right-column">
             <div class="settings-menu">
-                <div class="row">
+                <div class="basic-flex">
                     <v-select
                         label="Camera"
                         class="margin input"
@@ -51,7 +51,7 @@
                         <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
                     </v-btn>
                 </div>
-                <div class="row">
+                <div class="basic-flex">
                     <v-select
                         label="Microphone"
                         class="margin input"
@@ -69,7 +69,7 @@
                         <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
                     </v-btn>
                 </div>
-                <div class="row">
+                <div class="basic-flex">
                     <v-select
                     label="Speaker"
                     class="margin input"
@@ -230,136 +230,3 @@
         liveSwitchPlugin.addIncomingChatHandler(channel, chatHandler);
     })
 </script>
-
-<style scoped>
-    .margin {
-        margin: 5px 10px 5px 10px;
-    }
-    .video {
-        margin: 5px
-    }
-    div.center {
-        margin-left: auto;
-        margin-right: auto;
-        width: fit-content;
-    }
-    button.center {
-        margin-left: auto;
-        margin-right: auto;
-        width: fit-content;
-    }
-    .logo {
-        height: 70px;
-        margin: 0px;
-    }
-    .vcenter {
-        margin-top: auto;
-        margin-bottom: auto;
-    }
-    i.center {
-        margin-left: -7px;
-    }
-    .video-grid {
-        display: flex;
-        width: 100%;
-        height: calc(100% - 200px);
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        flex-direction: row;
-    }
-    .input {
-        flex-grow: 0;
-        width: 290px;
-    }
-    .chat-input {
-        flex-grow: 0;
-        width: 280px;
-    }
-    .container {
-        display: flex;
-        height: 100%;
-    }
-    .left-column {
-        width: calc(100% - 400px);
-    }
-    .right-column {
-        width: 400px;
-        padding-top: 125px;
-    }
-    .flex-center {
-        display: flex;
-        justify-content: center;
-    }
-    .row-spread {
-        display: flex;
-        justify-content: space-between;
-        margin: 0px 10px;
-    }
-    .user-counter {
-        color: white;
-        font-size: 24px;
-    }
-    .users {
-        color: white;
-        font-size: 28px;
-    }
-    .leave-button {
-        background-color: red;
-        color: white;
-    }
-    .settings-menu {
-        background-color: ghostwhite;
-        border-radius: 5px;
-        margin: 10px;
-        padding: 5px 0px;
-    }
-    .row {
-        display: flex;
-    }
-    .button {
-        color: white;
-        background-color: rgba(3,1,28,.8);
-        font-size: 24px;
-    }
-    .chat-container {
-        background-color: ghostwhite;
-        border-radius: 5px;
-        margin: 10px;
-        height: 60%;
-        position: relative;
-        top: 20px;
-    }
-    .chat-header {
-        border-bottom: 2px solid black;
-    }
-    .chat-footer {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        position: absolute;
-        bottom: 0;
-    }
-    .chat-button {
-        float: right;
-        color: white;
-        background-color: blue;
-        position: absolute;
-        bottom: 5px;
-        right: 5px
-    }
-    .chat-message {
-    margin: 5px;
-    border-radius: 5px;
-    padding: 3px;
-    width: fit-content;
-    color: white;
-  }
-  .my-chat {
-    background-color: rgb(0, 157, 255);
-    margin-left: auto;
-  }
-  .other-chat {
-    background-color: rgb(64, 156, 64);
-  }
-</style>

@@ -32,7 +32,7 @@
         class="margin button"
         icon
         @click="store.commit('toggleLocalVideoMute')">
-          <i class="center icon-video"/>
+          <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
         </v-btn>
       </div>
       <div class="row">
@@ -50,7 +50,7 @@
         class="margin button"
         icon
         @click="store.commit('toggleLocalAudioMute')">
-          <i class="center icon-audio-mic"/>
+          <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
         </v-btn>
       </div>
       <div class="row-center">
@@ -72,58 +72,75 @@
 </template>
 
 <script setup lang="ts">
-  import "../assets/css/liveswitch.css";
-  import { useRouter } from "vue-router";
-  import Video from "./Video.vue";
-  import ls from 'fm.liveswitch';
-  import { Ref, onMounted, ref } from "vue";
-  import { useStore } from 'vuex';
+  import { useRouter, useRoute } from "vue-router";
+    import Video from "./Video.vue";
+    import liveSwitch from 'fm.liveswitch';
+    import { Ref, onMounted, ref, watch, inject } from "vue";
+    import { useStore } from 'vuex';
+    import * as mnemonicId from 'mnemonic-id'
 
-  // setup some global access
-  const store = useStore();
-  const router = useRouter();
+    const liveSwitchPlugin: any = inject('liveSwitch');
 
-  // setup reactive variable for local media
-  let localMedia : Ref<ls.LocalMedia | undefined> = ref(undefined);
+    // setup some global access
+    const store = useStore();
+    const router = useRouter();
+    const route = useRoute();
 
-  // setup input values
-  const displayName : Ref<String> = ref("");
-  const channelId : Ref<String> = ref("");
+    // setup reactive variable for local media
+    let localMedia : Ref<liveSwitch.LocalMedia | undefined> = ref(undefined);
 
-  // handler that validates form and switches to inCall screen
-  async function joinCall(this: any, event: any) {
-    // wait for form validation to complete
-    const results = await event
-    // only proceed if validation passes
-    if (!results.valid) {  
-      return;
+    // setup input values
+    const displayName : Ref<string> = ref(mnemonicId.createNameId());
+    const channelId : Ref<string> = ref("");
+
+    if (route.params.channelId) {
+      channelId.value = route.params.channelId as string;
     }
-    // update global store with inputs
-    store.commit('setChannelId', channelId.value)
-    store.commit('setDisplayName', displayName.value)
-    // navigate to inCall screen
-    router.push('/inCall');
-  }
+    else {
+      channelId.value = Math.floor(Math.random() * 100000).toString()
+    }
 
-  onMounted(async () => {
-    const media = new ls.LocalMedia(true, true)
-    await media.start()
-    onLocalMediaReady(media)
+    updateURL();
+      
+    watch(channelId, updateURL);
+
+    function updateURL() {
+      router.push({name: 'Lobby', params: { channelId: channelId.value}})
+    }
+
+    // handler that validates form and switches to inCall screen
+    async function joinCall(this: any, event: any) {
+      // wait for form validation to complete
+      const results = await event
+      // only proceed if validation passes
+      if (!results.valid) {  
+        return;
+      }
+      // update global store with inputs
+      store.commit('setChannelId', channelId.value)
+      store.commit('setDisplayName', displayName.value)
+      // navigate to inCall screen
+      router.push('/inCall');
+    }
+
+    onMounted(async () => {
+      const media = await liveSwitchPlugin.startLocalMedia();
+      localMedia.value = media;
+      store.commit('setLocalMedia', media)
+      onLocalMediaReady(media);
+    })
     
-  })
-  const onLocalMediaReady = function (media: ls.LocalMedia) {
-    localMedia.value = media;
+    const onLocalMediaReady = function (media: liveSwitch.LocalMedia) {
+      store.commit('setLocalMedia', media)
 
-    store.commit('setLocalMedia', media)
+      store.commit('populateCameraList')
+      store.commit('populateMicrophoneList')
 
-    store.commit('populateCameraList')
-    store.commit('populateMicrophoneList')
+      store.commit('setActiveVideoDevice', media.getVideoSourceInput().getId());
+      store.commit('setActiveAudioDevice', media.getAudioSourceInput().getId());
 
-    store.commit('setActiveVideoDevice', media.getVideoSourceInput().getId());
-    store.commit('setActiveAudioDevice', media.getAudioSourceInput().getId());
-
-    
-    store.commit('setVideoMuted', media.getVideoMuted());
-    store.commit('setAudioMuted', media.getAudioMuted());
-  }
+      
+      store.commit('setVideoMuted', media.getVideoMuted());
+      store.commit('setAudioMuted', media.getAudioMuted());
+    }
 </script>
