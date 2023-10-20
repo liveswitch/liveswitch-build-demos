@@ -22,7 +22,7 @@
         <div class="row">
           <v-text-field
             label="Display Name"
-            class="margin input"
+            class="margin input liveswitch"
             hide-details="auto"
             :rules="[v => !!v || 'This field is Required']"
             v-model="displayName"></v-text-field>
@@ -30,7 +30,7 @@
         <div class="row">
           <v-text-field
             label="Channel ID"
-            class="margin input"
+            class="margin input liveswitch"
             hide-details="auto"
             :rules="[v => !!v || 'This field is Required']"
             v-model="channelId"></v-text-field>
@@ -38,14 +38,14 @@
         <div class="row">
           <v-select
             label="Camera"
-            class="margin input"
+            class="margin input liveswitch"
             hide-details="auto"
             :items="store.state.cameraList"
             item-title="name"
             item-value="id"
             v-model="store.state.activeVideoDevice"
             @update:model-value="store.commit('changeCamera')"></v-select>
-          <v-btn class="margin button"
+          <v-btn class="margin button liveswitch"
             icon
             @click="store.commit('toggleLocalVideoMute')">
               <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
@@ -54,21 +54,21 @@
         <div class="row">
           <v-select
             label="Microphone"
-            class="margin  input"
+            class="margin  input liveswitch"
             hide-details="auto"
             :items="store.state.microphoneList"
             item-title="name"
             item-value="id"
             v-model="store.state.activeAudioDevice"
             @update:model-value="store.commit('changeMicrophone')"></v-select>
-          <v-btn class="margin button"
+          <v-btn class="margin button liveswitch"
             icon
             @click="store.commit('toggleLocalAudioMute')">
               <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
           </v-btn>
         </div>
         <div class="row">
-          <v-btn class="margin center join-button" type="submit">Join</v-btn>
+          <v-btn class="margin center join-button liveswitch custom" type="submit">Join</v-btn>
         </div>
       </v-form>
     </div>

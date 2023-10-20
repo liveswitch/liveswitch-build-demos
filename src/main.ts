@@ -109,7 +109,9 @@ const store = createStore({
       },
       toggleVideoMute (state, media) {
         if (media instanceof ls.LocalMedia) {
-          this.toggleLocalVideoMute(state);
+          state.videoMuted = !state.videoMuted;
+          let localMedia = media as ls.LocalMedia
+          localMedia.setVideoMuted(state.videoMuted)
         }
         else {
           const remoteMedia = media as ls.RemoteMedia;
@@ -118,7 +120,9 @@ const store = createStore({
       },
       toggleAudioMute (state, media) {
         if (media instanceof ls.LocalMedia) {
-          this.toggleLocalAudioMute(state);
+          state.audioMuted = !state.audioMuted;
+          let localMedia = media as ls.LocalMedia
+          localMedia.setAudioMuted(state.audioMuted)
         }
         else {
           const remoteMedia = media as ls.RemoteMedia;

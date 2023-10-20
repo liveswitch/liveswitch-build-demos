@@ -4,7 +4,7 @@
       <div class="row">
         <v-text-field
           label="Display Name"
-          class="margin short input"
+          class="margin short input liveswitch"
           hide-details="auto"
           :rules="[v => !!v || 'This field is Required']"
           v-model="displayName"></v-text-field>
@@ -12,7 +12,7 @@
       <div class="row">
         <v-text-field 
           label="Channel ID" 
-          class="margin short input" 
+          class="margin short input liveswitch"
           hide-details="auto"
           :rules="[v => !!v || 'This field is Required']"
           v-model="channelId"></v-text-field>
@@ -20,7 +20,7 @@
       <div class="row">
         <v-select
           label="Camera"
-          class="margin short input"
+          class="margin short input liveswitch"
           hide-details="auto"
           :items="store.state.cameraList"
           item-title="name"
@@ -29,7 +29,7 @@
           @update:model-value="store.commit('changeCamera')"
         ></v-select>
         <v-btn
-        class="margin button"
+        class="margin button liveswitch"
         icon
         @click="store.commit('toggleLocalVideoMute')">
           <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
@@ -38,7 +38,7 @@
       <div class="row">
         <v-select
           label="Microphone"
-          class="margin short input"
+          class="margin short input liveswitch"
           hide-details="auto"
           :items="store.state.microphoneList"
           item-title="name"
@@ -47,14 +47,14 @@
           @update:model-value="store.commit('changeMicrophone')"
         ></v-select>
         <v-btn
-        class="margin button"
+        class="margin button liveswitch"
         icon
         @click="store.commit('toggleLocalAudioMute')">
           <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
         </v-btn>
       </div>
       <div class="row-center">
-        <v-btn class="center join-button" type="submit">Join</v-btn>
+        <v-btn class="center join-button liveswitch" type="submit">Join</v-btn>
       </div>
     </v-form>
     <div class="margin">

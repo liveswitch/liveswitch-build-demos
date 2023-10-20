@@ -83,7 +83,7 @@
 
     // handle custom styles based on local and mobile
     const pinStyle : StyleValue = props.userName === 'Me' ? "justify-content: space-between;" : "justify-content: end;"
-    const labelStyle : StyleValue = mobile && props.userName === 'Me' ? "margin-top: 14px;" : ""
+    const labelStyle : StyleValue = mobile && props.userName === 'Me' ? "margin-top: auto; margin-bottom: auto" : ""
 
     // once we have a value for local media, we should render it to the screen
     watch(localMedia, async () => {
@@ -101,12 +101,22 @@
 
     const toggleVideoMute = function () {
         store.commit('toggleVideoMute', localMedia.value ? localMedia.value : remoteMedia.value)
-        cameraMuted.value = !cameraMuted.value
+        if (localMedia.value) {
+            cameraMuted.value = store.state.videoMuted
+        } 
+        else {
+            cameraMuted.value = !cameraMuted.value
+        }
     }
 
     const toggleAudioMute = function () {
         store.commit('toggleAudioMute', localMedia.value ? localMedia.value : remoteMedia.value)
-        micMuted.value = !micMuted.value
+        if (localMedia.value) {
+            micMuted.value = store.state.audioMuted
+        } 
+        else {
+            micMuted.value = !micMuted.value
+        }
     }
         
     const insertVideo = function () {

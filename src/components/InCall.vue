@@ -9,7 +9,7 @@
                     <i class="icon-users users"/>
                     {{ remoteCounter }}
                 </div>
-                <v-btn class="leave-button" @click="leaveCall">Leave Call</v-btn>
+                <v-btn class="leave-button liveswitch" @click="leaveCall">Leave Call</v-btn>
             </div>
             <div class="video-grid">
                 <Video
@@ -32,11 +32,11 @@
             </div>
         </div>
         <div class="right-column">
-            <div class="settings-menu">
+            <div class="settings-menu-in-call">
                 <div class="basic-flex">
                     <v-select
                         label="Camera"
-                        class="margin input"
+                        class="margin input liveswitch"
                         hide-details="auto"
                         :items="store.state.cameraList"
                         item-title="name"
@@ -45,7 +45,7 @@
                         @update:model-value="store.commit('changeCamera')"
                     ></v-select>
                     <v-btn
-                    class="margin button"
+                    class="margin button liveswitch"
                     icon
                     @click="store.commit('toggleLocalVideoMute')">
                         <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
@@ -54,7 +54,7 @@
                 <div class="basic-flex">
                     <v-select
                         label="Microphone"
-                        class="margin input"
+                        class="margin input liveswitch"
                         hide-details="auto"
                         :items="store.state.microphoneList"
                         item-title="name"
@@ -63,7 +63,7 @@
                         @update:model-value="store.commit('changeMicrophone')"
                     ></v-select>
                     <v-btn
-                    class="margin button"
+                    class="margin button liveswitch"
                     icon
                     @click="store.commit('toggleLocalAudioMute')">
                         <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
@@ -72,7 +72,7 @@
                 <div class="basic-flex">
                     <v-select
                     label="Speaker"
-                    class="margin input"
+                    class="margin input liveswitch"
                     hide-details="auto"
                     v-if="store.state.speakerList.length > 0"
                     :items="store.state.speakerList"
@@ -99,13 +99,13 @@
                     <v-text-field
                     label="Chat Message"
                     clearable
-                    class="margin chat-input"
+                    class="margin chat-input liveswitch"
                     hide-details="auto"
                     v-model="chatMessage"
                     @keydown.enter.prevent="sendChat"
                     ></v-text-field>
                     <v-btn
-                        class="chat-button"
+                        class="chat-button liveswitch"
                         @click="sendChat">
                             Send
                     </v-btn>
