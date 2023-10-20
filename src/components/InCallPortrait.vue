@@ -1,12 +1,12 @@
 <template>
     <div class="container">
         <div class="column">
-            <v-img src="@/assets/logo.svg" class="logo-in-call"/>
+            <v-img src="@/assets/logo.svg" class="logo-in-call liveswitch"/>
             <div class="margin spread">
                 <div class="row-in-call">
                     <v-menu :close-on-content-click="false" location="bottom">
                         <template v-slot:activator="{props}">
-                            <v-btn v-bind="props" icon class="icon" flat>
+                            <v-btn v-bind="props" icon class="icon liveswitch" flat>
                                 <i class="center icon-cog-gear"/>
                             </v-btn>
                         </template>
@@ -18,7 +18,7 @@
                                 <v-list-item>
                                     <v-select
                                         label="Camera"
-                                        class="margin input-in-call"
+                                        class="margin input-in-call liveswitch"
                                         hide-details="auto"
                                         :items="store.state.cameraList"
                                         item-title="name"
@@ -29,7 +29,7 @@
                                 <v-list-item>
                                     <v-select
                                         label="Microphone"
-                                        class="margin input-in-call"
+                                        class="margin input-in-call liveswitch"
                                         hide-details="auto"
                                         :items="store.state.microphoneList"
                                         item-title="name"
@@ -40,7 +40,7 @@
                                 <v-list-item>
                                     <v-select
                                         label="Speaker"
-                                        class="margin input-in-call"
+                                        class="margin input-in-call liveswitch"
                                         hide-details="auto"
                                         v-if="store.state.speakerList.length > 0"
                                         :items="store.state.speakerList"
@@ -58,7 +58,7 @@
                     </div>
                 </div>
                 <div class="button-wrapper">
-                    <v-btn class="leave-button" @click="leaveCall">Leave</v-btn>
+                    <v-btn class="leave-button liveswitch" @click="leaveCall">Leave</v-btn>
                 </div>
             </div>
             <div class="tab-container">
@@ -68,8 +68,9 @@
                             <div class="video-container">
                                 <Video
                                 v-if="store.state.localMedia && showLocal"
-                                ask-height="240px"
+                                ask-height="235px"
                                 ask-width="320px"
+                                :maxLabelLength=7
                                 :local-video="store.state.localMedia"
                                 userName="Me"></Video>
                             </div>
@@ -81,25 +82,26 @@
                                 :index="value.index"
                                 :userName="value.displayName"
                                 :connection="value.connection"
-                                ask-height="240px"
+                                :maxLabelLength=7
+                                ask-height="235px"
                                 ask-width="320px"
                                 :maxIndex=maxDisplayVideo></Video>
                             </div>
                         </div>
                     </div>
                     <div class="controls-container">
-                        <v-btn class="margin align-left" :class="pageNumber === 1 ? 'inactive-button' : 'active-button'" icon @click="prevPage">
+                        <v-btn class="margin align-left liveswitch" :class="pageNumber === 1 ? 'inactive-button' : 'active-button'" icon @click="prevPage">
                             <i class="center icon-caret-left-md"/>
                         </v-btn>
                         <div class="row-center">
-                            <v-btn class="margin active-button" icon @click="store.commit('toggleLocalVideoMute')">
+                            <v-btn class="margin active-button liveswitch" icon @click="store.commit('toggleLocalVideoMute')">
                                 <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
                             </v-btn>
-                            <v-btn class="margin active-button" icon @click="store.commit('toggleLocalAudioMute')">
+                            <v-btn class="margin active-button liveswitch" icon @click="store.commit('toggleLocalAudioMute')">
                                 <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
                             </v-btn>
                         </div>
-                        <v-btn class="margin active-button align-right" :class="pageNumber === lastPage ? 'inactive-button' : 'active-button'" icon @click="nextPage">
+                        <v-btn class="margin active-button align-right liveswitch" :class="pageNumber === lastPage ? 'inactive-button' : 'active-button'" icon @click="nextPage">
                             <i class="center icon-caret-right-md"/>
                         </v-btn>
                     </div>
@@ -120,12 +122,13 @@
                         <v-text-field
                         label="Chat Message"
                         clearable
-                        class="margin chat-input"
+                        class="margin chat-input liveswitch"
                         hide-details="auto"
                         v-model="chatMessage"
+                        @keydown.enter.prevent="sendChat"
                         ></v-text-field>
                         <v-btn
-                        class="chat-button"
+                        class="chat-button liveswitch"
                         @click="sendChat">Send</v-btn>
                     </div>
                 </div>
@@ -269,6 +272,10 @@
 
     function openDownStreamConnectionHandler (downstreamConnection: liveSwitch.SfuDownstreamConnection, remoteMedia: liveSwitch.RemoteMedia) {
         let displayName = downstreamConnection.getRemoteConnectionInfo().getUserAlias();
+        if (remoteCounter.value === 1) {
+                store.commit('setVideoList', [{connection: downstreamConnection, media: remoteMedia, index: remoteCounter.value, displayName: displayName}])
+        }
+        
         downstreamConnections.value[downstreamConnection.getId()] = {connection: downstreamConnection, remoteMedia: remoteMedia, index: remoteCounter.value++, displayName: displayName};
 
         populateSpeakerList(remoteMedia);

@@ -13,10 +13,10 @@
             label="Pin"
             color="blue"
             style="color: white;"
-            v-if="userName == 'Me'"
+            v-if="userName == 'Me' && mobile"
             v-model="pinLocal"
             hide-details="auto"></v-switch>
-            <v-btn class="display-label" :style="labelStyle" v-if="userName">{{userName}}</v-btn>
+            <v-btn class="display-label" :style="labelStyle" v-if="userName">{{userName.length > 10 && maxLabelLength ? userName.substring(0,maxLabelLength) + '...' : userName}}</v-btn>
         </div>
     </div>
 </template>
@@ -59,6 +59,9 @@
         // remote connection to properly update UI
         connection: {
             type: ls.SfuDownstreamConnection
+        },
+        maxLabelLength: {
+            type: Number
         }
 	});
 
@@ -82,7 +85,7 @@
     const { mobile } = useDisplay();
 
     // handle custom styles based on local and mobile
-    const pinStyle : StyleValue = props.userName === 'Me' ? "justify-content: space-between;" : "justify-content: end;"
+    const pinStyle : StyleValue = (props.userName === 'Me' && mobile.value) ? "justify-content: space-between;" : "justify-content: end;"
     const labelStyle : StyleValue = mobile && props.userName === 'Me' ? "margin-top: auto; margin-bottom: auto" : ""
 
     // once we have a value for local media, we should render it to the screen

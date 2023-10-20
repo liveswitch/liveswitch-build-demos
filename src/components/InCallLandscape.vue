@@ -8,6 +8,7 @@
                             v-if="store.state.localMedia && showLocal"
                             ask-height="265px"
                             ask-width="280px"
+                            :maxLabelLength=5
                             :local-video="store.state.localMedia"
                             userName="Me"></Video>
                     </div>
@@ -21,20 +22,23 @@
                             :connection="value.connection"
                             ask-height="265px"
                             ask-width="280px"
+                            :maxLabelLength=5
                             :maxIndex=maxDisplayVideo></Video>
                     </div>
                 </div>
                 <div class="controls-container">
-                    <v-btn class="margin align-left" :class="pageNumber === 1 ? 'inactive-button' : 'active-button'" icon @click="prevPage">
+                    <v-btn class="margin align-left liveswitch" :class="pageNumber === 1 ? 'inactive-button' : 'active-button'" icon @click="prevPage">
                         <i class="center icon-caret-left-md"/>
                     </v-btn>
-                    <v-btn class="margin active-button" icon @click="store.commit('toggleLocalVideoMute')">
-                        <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
-                    </v-btn>
-                    <v-btn class="margin active-button" icon @click="store.commit('toggleLocalAudioMute')">
-                        <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
-                    </v-btn>
-                    <v-btn class="margin align-right" :class="pageNumber === lastPage ? 'inactive-button' : 'active-button'" icon @click="nextPage">
+                    <div class="row-center">
+                        <v-btn class="margin active-button liveswitch" icon @click="store.commit('toggleLocalVideoMute')">
+                            <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
+                        </v-btn>
+                        <v-btn class="margin active-button liveswitch" icon @click="store.commit('toggleLocalAudioMute')">
+                            <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
+                        </v-btn>
+                    </div>
+                    <v-btn class="margin align-right liveswitch" :class="pageNumber === lastPage ? 'inactive-button' : 'active-button'" icon @click="nextPage">
                         <i class="center icon-caret-right-md"/>
                     </v-btn>
                 </div>
@@ -57,25 +61,26 @@
                             <v-text-field
                             label="Chat Message"
                             clearable
-                            class="chat-input"
+                            class="chat-input liveswitch"
                             hide-details="auto"
-                            v-model="chatMessage"></v-text-field>
+                            v-model="chatMessage"
+                            @keydown.enter.prevent="sendChat"></v-text-field>
                             <v-btn
-                            class="chat-button"
+                            class="chat-button liveswitch"
                             @click="sendChat">Send</v-btn>
                         </div>
                 </div>
             </div>
         </div>
         <div class="right-column">
-            <v-img src="@/assets/logoSmall.png" class="logo-in-call"/>
+            <v-img src="@/assets/logoSmall.png" class="logo-in-call liveswitch"/>
             <span class="center users-container">
                 <i class="icon-users users"/>
                 {{ remoteCounter }}
             </span>
             <v-menu :close-on-content-click="false" location="left">
                 <template v-slot:activator="{props}">
-                    <v-btn class="margin center icon" v-bind="props" icon flat>
+                    <v-btn class="margin center icon liveswitch" v-bind="props" icon flat>
                         <i class="center icon-cog-gear"/>
                     </v-btn>
                 </template>
@@ -87,7 +92,7 @@
                         <v-list-item>
                             <v-select
                                 label="Camera"
-                                class="margin input-in-call"
+                                class="margin input-in-call liveswitch"
                                 hide-details="auto"
                                 :items="store.state.cameraList"
                                 item-title="name"
@@ -98,7 +103,7 @@
                         <v-list-item>
                             <v-select
                                 label="Microphone"
-                                class="margin input-in-call"
+                                class="margin input-in-call liveswitch"
                                 hide-details="auto"
                                 :items="store.state.microphoneList"
                                 item-title="name"
@@ -109,7 +114,7 @@
                         <v-list-item>
                             <v-select
                                 label="Speaker"
-                                class="margin input-in-call"
+                                class="margin input-in-call liveswitch"
                                 hide-details="auto"
                                 v-if="store.state.speakerList.length > 0"
                                 :items="store.state.speakerList"
@@ -121,13 +126,13 @@
                     </v-list>
                 </v-card>
             </v-menu>
-            <v-btn icon class="center icon" flat @click="switchTab('CHAT')">
+            <v-btn icon class="center icon liveswitch" flat @click="switchTab('CHAT')">
                 <i class="center icon-chat"/>
             </v-btn>
-            <v-btn icon class="center icon" flat @click="switchTab('GALLERY')">
+            <v-btn icon class="center icon liveswitch" flat @click="switchTab('GALLERY')">
                 <i class="center icon-video"/>
             </v-btn>
-            <v-btn class="center leave-button" @click="leaveCall">Leave</v-btn>
+            <v-btn class="center leave-button liveswitch" @click="leaveCall">Leave</v-btn>
         </div>
     </div>
 </template>
@@ -261,6 +266,10 @@
 
     function openDownStreamConnectionHandler (downstreamConnection: liveSwitch.SfuDownstreamConnection, remoteMedia: liveSwitch.RemoteMedia) {
         let displayName = downstreamConnection.getRemoteConnectionInfo().getUserAlias();
+        if (remoteCounter.value === 1) {
+                store.commit('setVideoList', [{connection: downstreamConnection, media: remoteMedia, index: remoteCounter.value, displayName: displayName}])
+        }
+
         downstreamConnections.value[downstreamConnection.getId()] = {connection: downstreamConnection, remoteMedia: remoteMedia, index: remoteCounter.value++, displayName: displayName};
 
         populateSpeakerList(remoteMedia);

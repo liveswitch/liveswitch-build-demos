@@ -184,7 +184,7 @@ div.row {
     display: flex;
     justify-content: space-between;
 }
-.icon {
+.icon.liveswitch {
     color: white;
     background-color: #323b4b;
     font-size: 24px;
@@ -256,11 +256,20 @@ video {
     object-fit: cover !important;
     border-radius: 15px;
 }
+.chat-body {
+    height: 395px;
+    overflow: scroll;
+}
  @media (orientation: portrait) and (max-height: 1000px){
     .header {
         color: white;
         width: fit-content;
         float: left;
+    }
+    .column {
+        display: flex;
+        flex-flow: column wrap;
+        width: 100%;
     }
     .settings-menu {
         background-color: ghostwhite;
@@ -306,9 +315,10 @@ video {
         align-items: center;
         height: 56px;
     }
-    .logo-in-call {
+    .logo-in-call.liveswitch {
         height: 40px;
         margin: 10px;
+        flex-grow: 0;
     }
     .row-in-call {
         display: flex;
@@ -343,7 +353,7 @@ video {
     }
     .video-container {
         display: flex;
-        margin: 10px 5px;
+        margin: 5px;
         flex-direction: column;
     }
     .controls-container {
@@ -353,14 +363,14 @@ video {
         bottom: 60px;
         width: 90%
     }
-    .active-button {
+    .active-button.liveswitch {
         color: white;
         background-color: rgba(3,1,28,.8);
         font-size: 20px;
         height: 36px;
         width: 36px;
     }
-    .inactive-button {
+    .inactive-button.liveswitch {
         color: grey;
         background-color: rgba(3,1,28,.8);
         font-size: 20px;
@@ -373,7 +383,7 @@ video {
         width: fit-content;
     }
     .chat-container {
-        height: 545px;
+        height: 500px;
         background-color: white;
         margin-bottom: 20px;
         border-radius: 5px;
@@ -387,7 +397,8 @@ video {
         justify-content: center;
     }
     .chat-body {
-        height: 450px;
+        height: 400px;
+        overflow: scroll;
     }
     .chat-footer {
         display: flex;
@@ -408,6 +419,12 @@ video {
     .tabs {
         width: 100%;
         background-color: white;
+    }
+    button.display-label {
+        height: 80% !important;
+        border-radius: 15px;
+        margin-right: 10px;
+        max-width: 110px;
     }
 } 
 
@@ -463,7 +480,7 @@ video {
     .margin {
         margin: 5px;
     }
-    .logo-in-call {
+    .logo-in-call.liveswitch {
         height: 40px;
         flex-grow: 0;
     }
@@ -484,7 +501,7 @@ video {
     }
     .chat-container {
         width: 600px;
-        height: 330px;
+        height: 300px;
         background-color: ghostwhite;
         border-radius: 5px;
         margin-right: 10px;
@@ -493,17 +510,17 @@ video {
         display: flex;
         flex-direction: row;
         position: absolute;
-        bottom: 10px;
-        width: 100%
+        width: 98%;
+        justify-content: space-between;
     }
-    .active-button {
+    .active-button.liveswitch {
         color: white;
         background-color: rgba(3,1,28,.8);
         font-size: 28px;
         height: 40px;
         width: 40px;
     }
-    .inactive-button {
+    .inactive-button.liveswitch {
         color: grey;
         background-color: rgba(3,1,28,.8);
         font-size: 28px;
@@ -511,11 +528,15 @@ video {
         width: 40px;
     }
     .chat-body {
-        height: 240px;
+        height: 200px;
+        overflow: scroll;
     }
     .chat-input {
         margin-left: 10px;
         margin-right: 5px;
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
     }
     .chat-button {
         margin: 5px;
@@ -525,13 +546,16 @@ video {
         flex-flow: column wrap;
         justify-content: space-between;
         align-content: center;
+        width: auto;
+        padding: 0px;
+        height: 95%
     }
     .users-container {
         float: left;
         color: white;
         font-size: 24px;
     }
-    .icon {
+    .icon.liveswitch {
         color: white;
         background-color: #323b4b;
         font-size: 28px;
@@ -540,15 +564,21 @@ video {
         min-width: 300px;
         margin: 5px;
     }
-    .input-in-call {
+    .input-in-call.liveswitch {
         width: 275px;
         flex: 0 1 auto;
     }
-    .leave-button {
+    .leave-button.liveswitch {
         color: white;
         background-color: red;
         margin-bottom: 20px;
     }
+    button.display-label {
+        height: 80% !important;
+        border-radius: 15px;
+        margin-right: 10px;
+        max-width: 80px;
+    }   
 }
 @media (max-width: 1000px) or (max-height: 1000px) {
     .icon-player {
@@ -559,9 +589,4 @@ video {
         flex-grow: 0;
         align-content: center;
     }
-    button.display-label {
-        height: 80% !important;
-        border-radius: 15px;
-        margin-right: 10px;
-    }   
 }
