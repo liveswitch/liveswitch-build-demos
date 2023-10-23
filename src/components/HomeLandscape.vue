@@ -1,32 +1,35 @@
 <template>
   <div class="row">
     <v-form class="settings-menu" @submit="joinCall" @submit.prevent="joinCall">
-      <div class="row">
+      <div class="row liveswitch">
         <v-text-field
           label="Display Name"
-          class="margin short input liveswitch"
+          class="margin input liveswitch"
           hide-details="auto"
+          density="compact"
           :rules="[v => !!v || 'This field is Required']"
           v-model="displayName"></v-text-field>
       </div>
-      <div class="row">
+      <div class="row liveswitch">
         <v-text-field 
           label="Channel ID" 
-          class="margin short input liveswitch"
+          class="margin input liveswitch"
           hide-details="auto"
+          density="compact"
           :rules="[v => !!v || 'This field is Required']"
           v-model="channelId"></v-text-field>
       </div>
-      <div class="row">
+      <div class="row liveswitch">
         <v-select
           label="Camera"
-          class="margin short input liveswitch"
+          class="margin input liveswitch"
           hide-details="auto"
+          density="compact"
           :items="store.state.cameraList"
           item-title="name"
           item-value="id"
           v-model="store.state.activeVideoDevice"
-          @update:model-value="store.commit('changeCamera')"
+          @update:model-value="updateCamera"
         ></v-select>
         <v-btn
         class="margin button liveswitch"
@@ -35,16 +38,17 @@
           <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
         </v-btn>
       </div>
-      <div class="row">
+      <div class="row liveswitch">
         <v-select
           label="Microphone"
-          class="margin short input liveswitch"
+          class="margin input liveswitch"
           hide-details="auto"
+          density="compact"
           :items="store.state.microphoneList"
           item-title="name"
           item-value="id"
           v-model="store.state.activeAudioDevice"
-          @update:model-value="store.commit('changeMicrophone')"
+          @update:model-value="updateMicrophone"
         ></v-select>
         <v-btn
         class="margin button liveswitch"
@@ -52,6 +56,19 @@
         @click="store.commit('toggleLocalAudioMute')">
           <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
         </v-btn>
+      </div>
+      <div class="row liveswitch">
+        <v-select
+          label="Speaker"
+          class="margin input liveswitch"
+          hide-details="auto"
+          density="compact"
+          :items="store.state.speakerList"
+          item-title="name"
+          item-value="id"
+          v-model="store.state.activeSpeakerDevice"
+          @update:model-value="updateSpeaker"
+        ></v-select>
       </div>
       <div class="row-center">
         <v-btn class="center join-button liveswitch" type="submit">Join</v-btn>
@@ -108,6 +125,16 @@
       router.push({name: 'Lobby', params: { channelId: channelId.value}})
     }
 
+    function updateCamera (deviceId: string) {
+      store.commit('changeCamera', deviceId)
+    }
+    function updateMicrophone (deviceId: string) {
+      store.commit('changeMicrophone', deviceId)
+    }
+    function updateSpeaker (deviceId: string) {
+      store.commit('setActiveSpeakerDevice', deviceId)
+    }
+
     // handler that validates form and switches to inCall screen
     async function joinCall(this: any, event: any) {
       // wait for form validation to complete
@@ -135,6 +162,7 @@
 
       store.commit('populateCameraList')
       store.commit('populateMicrophoneList')
+      store.commit('populateSpeakerList', new liveSwitch.RemoteMedia(true,true))
 
       store.commit('setActiveVideoDevice', media.getVideoSourceInput().getId());
       store.commit('setActiveAudioDevice', media.getAudioSourceInput().getId());

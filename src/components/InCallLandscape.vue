@@ -101,7 +101,7 @@
                                 item-title="name"
                                 item-value="id"
                                 v-model="store.state.activeVideoDevice"
-                                @update:model-value="store.commit('changeCamera')"></v-select>
+                                @update:model-value="updateCamera"></v-select>
                         </v-list-item>
                         <v-list-item>
                             <v-select
@@ -112,7 +112,7 @@
                                 item-title="name"
                                 item-value="id"
                                 v-model="store.state.activeAudioDevice"
-                                @update:model-value="store.commit('changeMicrophone')"></v-select>
+                                @update:model-value="updateMicrophone"></v-select>
                         </v-list-item>
                         <v-list-item>
                             <v-select
@@ -239,11 +239,19 @@
         router.push('/');
     }
 
+    function updateCamera (deviceId: string) {
+      store.commit('changeCamera', deviceId)
+    }
+    function updateMicrophone (deviceId: string) {
+      store.commit('changeMicrophone', deviceId)
+    }
+    
     async function changeSpeaker (deviceId: string) {
         const connectionId = Object.keys(downstreamConnections.value)[0];
         const firstConnection: DownstreamData = downstreamConnections.value[connectionId];
         const newSpeakerDevice = await liveSwitchPlugin.getAudioSink(deviceId, firstConnection);
         liveSwitchPlugin.updateSpeaker(downstreamConnections.value, newSpeakerDevice);
+        store.commit('setActiveSpeakerDevice', deviceId)
     }
 
     function closeRemoteConnectionHandler (connection: liveSwitch.SfuDownstreamConnection) {
@@ -275,7 +283,7 @@
 
         downstreamConnections.value[downstreamConnection.getId()] = {connection: downstreamConnection, remoteMedia: remoteMedia, index: remoteCounter.value++, displayName: displayName};
 
-        populateSpeakerList(remoteMedia);
+        changeSpeaker(store.state.activeSpeakerDevice);
 
         liveSwitchPlugin.createDownStreamCloseHandler(downstreamConnection, closeRemoteConnectionHandler)
     }
@@ -283,13 +291,6 @@
     function chatHandler (message: string) {
         var data = JSON.parse(message)
         messages.value.push({user: data.from, message: data.text})
-    }
-
-    function populateSpeakerList (remoteMedia: liveSwitch.RemoteMedia) {
-        //seed the speaker list if we do not have one
-        if (store.state.speakerList.length === 0) {
-            store.commit('populateSpeakerList', remoteMedia);
-        }
     }
 
     onMounted(async () => {

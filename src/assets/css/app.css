@@ -266,6 +266,9 @@ video {
     font-size: 18px;
 }
  @media (orientation: portrait) and (max-height: 1000px){
+    .row.liveswitch {
+        margin: 0px;
+    }
     .header {
         color: white;
         width: fit-content;
@@ -310,9 +313,6 @@ video {
         display: flex;
         flex-flow: column wrap;
         align-content: center;
-    }
-    .short {
-        height: 36px;
     }
     .row {
         display: flex;
@@ -443,20 +443,24 @@ video {
         justify-content: space-between;
         margin-top: 0px;
     }
+    .row.join-row {
+        margin: 0px;
+    }
 } 
 
 @media (orientation: landscape) and (max-width:1000px) {
-    .join-button.liveswitch {
-        margin-top: 12px;
+    .row-center {
+        margin-top: 0px;
+        margin-bottom: 0px;
+    }
+    .join-button.liveswitch {        
         color: white;
         background-color: blue;
+        height: 30px;
     }
     .input.liveswitch {
         flex-grow: 0;
         width:225px;
-    }
-    .short {
-        height: 42px;
     }
     .logo {
         width: 185px;
@@ -482,17 +486,17 @@ video {
         width: 310px;
         display: flex;
         flex-flow: column wrap;
-        padding: 5px 10px 10px 10px;
+        padding: 5px 10px;
     }
     .header {
         color: white;
         position: absolute;
         bottom: 0;
     }
-    .row {
+    .row.liveswitch {
         display: flex;
         flex-flow: row;
-        margin: 5px 0px;
+        margin: 0px;
     }
     .margin {
         margin: 5px;
