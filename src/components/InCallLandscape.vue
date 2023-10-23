@@ -119,7 +119,6 @@
                                 label="Speaker"
                                 class="margin input-in-call liveswitch"
                                 hide-details="auto"
-                                v-if="store.state.speakerList.length > 0"
                                 :items="store.state.speakerList"
                                 item-title="name"
                                 item-value="id"
