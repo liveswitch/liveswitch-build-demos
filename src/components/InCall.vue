@@ -9,6 +9,9 @@
                     <i class="icon-users users"/>
                     {{ remoteCounter }}
                 </div>
+                <div class="channel-label">
+                    Channel: {{ store.state.channelId }}
+                </div>
                 <v-btn class="leave-button liveswitch" @click="leaveCall">Leave Call</v-btn>
             </div>
             <div class="video-grid">

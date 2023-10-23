@@ -2,11 +2,14 @@
     <div class="container">
         <div>
             <div v-if="currentTab == 'GALLERY'" class="tab-container">
+                <div class="channel-label">
+                    Channel: {{ store.state.channelId }}
+                </div>
                 <div class="video-container">
                     <div>
                         <Video
                             v-if="store.state.localMedia && showLocal"
-                            ask-height="265px"
+                            ask-height="240px"
                             ask-width="280px"
                             :maxLabelLength=5
                             :local-video="store.state.localMedia"
@@ -20,7 +23,7 @@
                             :index="value.index"
                             :userName="value.displayName"
                             :connection="value.connection"
-                            ask-height="265px"
+                            ask-height="240px"
                             ask-width="280px"
                             :maxLabelLength=5
                             :maxIndex=maxDisplayVideo></Video>

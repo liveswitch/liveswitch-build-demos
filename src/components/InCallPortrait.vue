@@ -2,6 +2,9 @@
     <div class="container">
         <div class="column">
             <v-img src="@/assets/logo.svg" class="logo-in-call liveswitch"/>
+            <div class="channel-label">
+                Channel: {{ store.state.channelId }}
+            </div>
             <div class="margin spread">
                 <div class="row-in-call">
                     <v-menu :close-on-content-click="false" location="bottom">
