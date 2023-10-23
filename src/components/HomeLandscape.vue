@@ -147,7 +147,7 @@
       store.commit('setChannelId', channelId.value)
       store.commit('setDisplayName', displayName.value)
       // navigate to inCall screen
-      router.push('/inCall');
+      router.push({name: 'InCall', params: { channelId: channelId.value}})
     }
 
     onMounted(async () => {

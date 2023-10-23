@@ -141,7 +141,7 @@
 
 <script lang="ts" setup>
     import { Ref,ref,onMounted, watch, inject, computed } from "vue";
-    import { useRouter } from "vue-router";
+    import { useRouter, useRoute } from "vue-router";
     import { useStore } from 'vuex'
     import Video from "./Video.vue"
     import liveSwitch from 'fm.liveswitch'
@@ -149,6 +149,7 @@
     
     const store = useStore();
     const router = useRouter();
+    const route = useRoute();
     const liveSwitchPlugin: any = inject('liveSwitch');
 
     let client : liveSwitch.Client | null = null;
@@ -293,14 +294,25 @@
     }
 
     onMounted(async () => {
-        // register client
-        client = await liveSwitchPlugin.registerClient(store.state.displayName, store.state.channelId);
-        // get active channel we connected to from the client
-        channel = await liveSwitchPlugin.getChannel(client);
-        // connect my local media to the conection
-        liveSwitchPlugin.openSfuUpstreamConnection(store.state.localMedia, channel);
-        // connect to others via downstream connections
-        liveSwitchPlugin.createDownStreamOpenHandler(channel, openDownStreamConnectionHandler);
+        if (!store.state.channelId) {
+            if (route.params.channelId) {
+                router.push({name: 'Lobby', params: { channelId: route.params.channelId}})
+            }
+            else {
+                router.push('/');
+            }
+            return;
+        }
+        if (!store.state.upstreamConnection) {
+            // register client
+            client = await liveSwitchPlugin.registerClient(store.state.displayName, store.state.channelId);
+            // get active channel we connected to from the client
+            channel = await liveSwitchPlugin.getChannel(client);
+            // connect my local media to the conection
+            liveSwitchPlugin.openSfuUpstreamConnection(store.state.localMedia, channel);
+            // connect to others via downstream connections
+            liveSwitchPlugin.createDownStreamOpenHandler(channel, openDownStreamConnectionHandler);
+        }
 
         store.commit('setLocalMedia', media)
 
