@@ -16,7 +16,7 @@
             v-if="userName == 'Me' && mobile"
             v-model="pinLocal"
             hide-details="auto"></v-switch>
-            <v-btn class="display-label" :style="labelStyle" v-if="userName">{{userName.length > 10 && maxLabelLength ? userName.substring(0,maxLabelLength) + '...' : userName}}</v-btn>
+            <v-btn class="display-label" :style="labelStyle" v-if="userName">{{maxLabelLength && userName.length > maxLabelLength ? userName.substring(0,maxLabelLength) + '...' : userName}}</v-btn>
         </div>
     </div>
 </template>
@@ -67,7 +67,7 @@
 
     const store = useStore();
 
-    const pinLocal : Ref<boolean> = ref(false);
+    const pinLocal : Ref<boolean> = ref(store.state.pinLocal);
 
     // setup media as refs
     const localMedia = toRef(props, 'localVideo');

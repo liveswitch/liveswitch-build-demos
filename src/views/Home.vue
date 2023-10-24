@@ -56,7 +56,6 @@
 
   // handler that validates form and switches to inCall screen
   async function joinCall(this: any, event: any) {
-    debugger;
     // wait for form validation to complete
     const results = await event
     // only proceed if validation passes

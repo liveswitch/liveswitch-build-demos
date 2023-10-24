@@ -37,6 +37,7 @@ const store = createStore({
         speakerList: new Array(),
         pinLocal: false,
         videoList: new Array(),
+        messages: new Array()
       }
     },
     mutations: {
@@ -72,6 +73,11 @@ const store = createStore({
       },
       setVideoList(state, videoList) {
         state.videoList = videoList;
+      },
+      addChatMessage (state, chat) {
+        let messages = state.messages;
+        messages.push({user: chat.from, message: chat.text});
+        state.messages = messages;
       },
       toggleLocalAudioMute (state) {
         state.audioMuted = !state.audioMuted;
@@ -199,6 +205,7 @@ const store = createStore({
         state.speakerList = new Array();
         state.pinLocal = false
         state.videoList = new Array();
+        state.messages = new Array();
       }
     }
   })
