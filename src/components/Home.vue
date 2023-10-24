@@ -18,13 +18,13 @@
         <div class="header margin"><h2>Setup</h2></div>
       </div>
 
-      <v-form class="settings-menu margin" @submit="joinCall" @submit.prevent="joinCall">
+      <v-form class="settings-menu margin" @submit.prevent="joinCall">
         <div class="row">
           <v-text-field
             label="Display Name"
             class="margin input liveswitch"
             hide-details="auto"
-            :rules="[v => !!v || 'This field is Required']"
+            :rules="[(v: any) => !!v || 'This field is Required']"
             v-model="displayName"></v-text-field>
         </div>
         <div class="row">
@@ -32,7 +32,7 @@
             label="Channel ID"
             class="margin input liveswitch"
             hide-details="auto"
-            :rules="[v => !!v || 'This field is Required']"
+            :rules="[(v: any) => !!v || 'This field is Required']"
             v-model="channelId"></v-text-field>
         </div>
         <div class="row">
@@ -44,7 +44,7 @@
             item-title="name"
             item-value="id"
             v-model="store.state.activeVideoDevice"
-            @update:model-value="updateCamera"></v-select>
+            @update:model-value="changeCamera"></v-select>
           <v-btn class="margin button liveswitch"
             icon
             @click="store.commit('toggleLocalVideoMute')">
@@ -60,7 +60,7 @@
             item-title="name"
             item-value="id"
             v-model="store.state.activeAudioDevice"
-            @update:model-value="updateMicrophone"></v-select>
+            @update:model-value="changeMicrophone"></v-select>
           <v-btn class="margin button liveswitch"
             icon
             @click="store.commit('toggleLocalAudioMute')">
@@ -76,7 +76,7 @@
             item-title="name"
             item-value="id"
             v-model="store.state.activeSpeakerDevice"
-            @update:model-value="updateSpeaker"></v-select>
+            @update:model-value="changeSpeaker"></v-select>
         </div>
         <div class="row">
           <v-btn class="margin center join-button liveswitch custom" type="submit">Join</v-btn>
@@ -87,87 +87,38 @@
 </template>
 
 <script setup lang="ts">
-    import { useRouter, useRoute } from "vue-router";
-    import Video from "./Video.vue";
-    import liveSwitch from 'fm.liveswitch';
-    import { Ref, onMounted, ref, watch, inject } from "vue";
-    import { useStore } from 'vuex';
-    import * as mnemonicId from 'mnemonic-id'
+  import { toRef } from "vue";
+  import Video from "./Video.vue";
 
-    const liveSwitchPlugin: any = inject('liveSwitch');
-
-    // setup some global access
-    const store = useStore();
-    const router = useRouter();
-    const route = useRoute();
-  
-    // setup reactive variable for local media
-    let localMedia : Ref<liveSwitch.LocalMedia | undefined> = ref(undefined);
-
-    // setup input values
-    const displayName : Ref<string> = ref(mnemonicId.createNameId());
-    const channelId : Ref<string> = ref("");
-
-    if (route.params.channelId) {
-      channelId.value = route.params.channelId as string;
+  const props = defineProps({
+    store: {
+      type: Object,
+      required: true
+    },
+    displayName: {
+      type: String,
+      required: true
+    },
+    channelId: {
+      type: String,
+      required: true
     }
-    else {
-      channelId.value = Math.floor(Math.random() * 100000).toString()
-    }
+  });
+  const displayName = toRef(props, 'displayName');
+  const channelId = toRef(props, 'channelId');
 
-    updateURL();
-      
-    watch(channelId, updateURL);
+  const emit = defineEmits(['joinCall', 'changeCamera', 'changeMicrophone', 'changeSpeaker']);
 
-    function updateURL() {
-      router.push({name: 'Lobby', params: { channelId: channelId.value}})
-    }
-
-    function updateCamera (deviceId: string) {
-      store.commit('changeCamera', deviceId)
-    }
-    function updateMicrophone (deviceId: string) {
-      store.commit('changeMicrophone', deviceId)
-    }
-    function updateSpeaker (deviceId: string) {
-      store.commit('setActiveSpeakerDevice', deviceId)
-    }
-
-    // handler that validates form and switches to inCall screen
-    async function joinCall(this: any, event: any) {
-      // wait for form validation to complete
-      const results = await event
-      // only proceed if validation passes
-      if (!results.valid) {  
-        return;
-      }
-      // update global store with inputs
-      store.commit('setChannelId', channelId.value)
-      store.commit('setDisplayName', displayName.value)
-      // navigate to inCall screen
-      router.push({name: 'InCall', params: { channelId: channelId.value}})
-    }
-
-    onMounted(async () => {
-      const media = await liveSwitchPlugin.startLocalMedia();
-      localMedia.value = media;
-      store.commit('setLocalMedia', media)
-      onLocalMediaReady(media);
-      
-    })
-
-    const onLocalMediaReady = function (media: liveSwitch.LocalMedia) {
-      store.commit('setLocalMedia', media)
-
-      store.commit('populateCameraList')
-      store.commit('populateMicrophoneList')
-      store.commit('populateSpeakerList', new liveSwitch.RemoteMedia(true,true))
-
-      store.commit('setActiveVideoDevice', media.getVideoSourceInput().getId());
-      store.commit('setActiveAudioDevice', media.getAudioSourceInput().getId());
-
-      
-      store.commit('setVideoMuted', media.getVideoMuted());
-      store.commit('setAudioMuted', media.getAudioMuted());
-    }
+  const joinCall = (event: any) => {
+    emit('joinCall', event);
+  }
+  const changeCamera = (deviceId: String) => {
+    emit('changeCamera', deviceId);
+  }
+  const changeMicrophone = (deviceId: String) => {
+    emit('changeMicrophone', deviceId);
+  }
+  const changeSpeaker = (deviceId: String) => {
+    emit('changeSpeaker', deviceId);
+  }
 </script>
