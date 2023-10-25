@@ -1,0 +1,51 @@
+variables:
+- name: vmImage
+  value: ubuntu-20.04
+- name: System.Debug
+  value: false
+
+trigger:
+  branches:
+    include:
+    - main
+
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: refs/heads/main
+
+jobs:
+- job: Job_Build_Example
+  displayName: Build Example
+  pool:
+    vmImage: ${{ variables.vmImage }}
+  steps:
+    - task: Npm@1
+      displayName: 'Install Vue CLI'
+      inputs:
+        command: custom
+        workingDir: '$(Build.SourcesDirectory)/vue-example'
+        verbose: true
+        customCommand: 'install -g @vue/cli'
+
+    - task: Npm@1
+      displayName: 'Install Dependencies'
+      inputs:
+        workingDir: '$(Build.SourcesDirectory)/vue-example'
+        verbose: true
+        command: 'install'
+
+    - task: Npm@1
+      displayName: 'Build Example'
+      inputs:
+        command: custom
+        workingDir: '$(Build.SourcesDirectory)/vue-example'
+        verbose: true
+        customCommand: 'run build'
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Example'
+      inputs:
+        targetPath: '$(Build.SourcesDirectory)/vue-example/dist'
+        artifactName: 'example'
