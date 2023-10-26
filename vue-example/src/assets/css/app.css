@@ -265,7 +265,7 @@ video {
     margin-top: 10px;
     font-size: 18px;
 }
- @media (orientation: portrait) and (max-height: 1000px){
+ @media (orientation: portrait) and (max-height: 1279px){
     .row.liveswitch {
         margin: 0px;
     }
@@ -448,7 +448,7 @@ video {
     }
 } 
 
-@media (orientation: landscape) and (max-width:1000px) {
+@media (orientation: landscape) and (max-width: 1279px) {
     .row-center {
         margin-top: 0px;
         margin-bottom: 0px;
@@ -606,7 +606,7 @@ video {
         color: white;
     }
 }
-@media (max-width: 1000px) or (max-height: 1000px) {
+@media (max-width: 1279px) or (max-height: 1279px) {
     .icon-player {
         color: white;
         font-size: 28px;
