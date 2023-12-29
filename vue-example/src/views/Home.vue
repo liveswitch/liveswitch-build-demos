@@ -1,7 +1,7 @@
 <template>
-  <Home v-if="!mobile" :store="store" :display-name="displayName" :channel-id="channelId" @change-camera="updateCamera" @change-microphone="updateMicrophone" @change-speaker="updateSpeaker" @joinCall="joinCall"/>
-  <HomePortrait v-else-if="isPortrait" :store="store" :display-name="displayName" :channel-id="channelId" @change-camera="updateCamera" @change-microphone="updateMicrophone" @change-speaker="updateSpeaker" @joinCall="joinCall"/>
-  <HomeLandscape v-else :store="store" :display-name="displayName" :channel-id="channelId" @change-camera="updateCamera" @change-microphone="updateMicrophone" @change-speaker="updateSpeaker" @joinCall="joinCall"/>
+  <Home v-if="!mobile" :store="store" :display-name="displayName" :channel-id="channelId" @change-camera="updateCamera" @change-microphone="updateMicrophone" @change-speaker="updateSpeaker" @joinCall="joinCall" @changeChannel="updateChannel"/>
+  <HomePortrait v-else-if="isPortrait" :store="store" :display-name="displayName" :channel-id="channelId" @change-camera="updateCamera" @change-microphone="updateMicrophone" @change-speaker="updateSpeaker" @joinCall="joinCall" @changeChannel="updateChannel"/>
+  <HomeLandscape v-else :store="store" :display-name="displayName" :channel-id="channelId" @change-camera="updateCamera" @change-microphone="updateMicrophone" @change-speaker="updateSpeaker" @joinCall="joinCall" @changeChannel="updateChannel"/>
 </template>
 
 <script lang="ts" setup>
@@ -40,6 +40,9 @@
     
   watch(channelId, updateURL);
 
+  function updateChannel(newChannelId: string) {
+    channelId.value = newChannelId
+  }
   function updateURL() {
     router.push({name: 'Lobby', params: { channelId: channelId.value}})
   }

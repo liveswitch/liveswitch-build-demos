@@ -17,7 +17,8 @@
           hide-details="auto"
           density="compact"
           :rules="[v => !!v || 'This field is Required']"
-          v-model="channelId"></v-text-field>
+          v-model="channelId"
+          @update:model-value="changeChannel"></v-text-field>
       </div>
       <div class="row liveswitch">
         <v-select
@@ -109,7 +110,7 @@
   const displayName = toRef(props, 'displayName');
   const channelId = toRef(props, 'channelId');
 
-  const emit = defineEmits(['joinCall', 'changeCamera', 'changeMicrophone', 'changeSpeaker']);
+  const emit = defineEmits(['joinCall', 'changeCamera', 'changeMicrophone', 'changeSpeaker', 'changeChannel']);
 
   const joinCall = (event: any) => {
     emit('joinCall', event);
@@ -122,5 +123,8 @@
   }
   const changeSpeaker = (deviceId: String) => {
     emit('changeSpeaker', deviceId);
+  }
+  const changeChannel = (channelId: String) => {
+    emit('changeChannel', channelId);
   }
 </script>
