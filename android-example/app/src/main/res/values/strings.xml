@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">LiveSwitchBuildExample</string>
+    <string name="localVideo">localVideo</string>
+</resources>
