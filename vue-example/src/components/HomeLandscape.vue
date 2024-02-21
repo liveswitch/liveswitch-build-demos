@@ -1,6 +1,24 @@
 <template>
-  <div class="row">
-    <v-form class="settings-menu" @submit="joinCall" @submit.prevent="joinCall">
+  <div v-if="!sessionType" class="row">
+  <v-form class="settings-menu margin" @submit.prevent="startBroadcast,watchBroadcast">
+        <div class="row">
+          <v-select
+            label="Session Option"
+            class="margin input liveswitch"
+            hide-details="auto"
+            :items="sessionTypes"
+            item-title="name"
+            item-value="value"
+            v-model="selectedSessionType"
+          ></v-select>
+        </div>
+        <div class="row">
+          <v-btn class="margin center start-broadcast-button liveswitch custom" :disabled="!selectedSessionType"  @click="startSession">Select</v-btn>
+        </div>
+      </v-form>
+</div>
+  <div v-if="sessionType === 'start-broadcast'" class="row">
+    <v-form class="settings-menu">
       <div class="row liveswitch">
         <v-text-field
           label="Display Name"
@@ -72,7 +90,55 @@
         ></v-select>
       </div>
       <div class="row-center">
-        <v-btn class="center join-button liveswitch" type="submit">Join</v-btn>
+        <v-btn class="margin center start-broadcast-button liveswitch custom" @click="startBroadcast">Start Broadcast</v-btn>
+        <v-btn class="margin center watch-broadcast-button liveswitch custom" @click="watchBroadcast">Watch Broadcast</v-btn>
+      </div>
+    </v-form>
+    <div class="margin">
+      <div class="row relative">
+        <div class="margin row header"><h4>Preview</h4></div>
+        <v-img src="@/assets/logo.svg" class="logo"/>
+      </div>
+      <Video
+      :user-count=1
+      ask-height="250px"
+      ask-width="350px"
+      :local-video="store.state.localMedia"></Video>
+    </div>
+  </div>
+  <div v-if="sessionType === 'watch-broadcast'" class="row">
+    <v-form class="settings-menu">
+      <div class="row liveswitch">
+        <v-text-field
+          label="Display Name"
+          class="margin input liveswitch"
+          hide-details="auto"
+          density="compact"
+          :rules="[v => !!v || 'This field is Required']"
+          v-model="displayName"></v-text-field>
+      </div>
+      <div class="row liveswitch">
+        <v-text-field 
+          label="Channel ID" 
+          class="margin input liveswitch"
+          hide-details="auto"
+          density="compact"
+          :rules="[v => !!v || 'This field is Required']"
+          v-model="channelId"
+          @update:model-value="changeChannel"></v-text-field>
+      </div>
+      <div class="row liveswitch">
+        <v-text-field 
+          label="Media ID" 
+          class="margin input liveswitch"
+          hide-details="auto"
+          density="compact"
+          :rules="[v => !!v || 'This field is Required']"
+          v-model="mediaId"
+          @update:model-value="changeMediaId"></v-text-field>
+      </div>
+      <div class="row-center">
+        <v-btn class="margin center watch-broadcast-button liveswitch custom" @click="(event:any) => watchBroadcast(event)">Watch Broadcast</v-btn>
       </div>
     </v-form>
     <div class="margin">
@@ -90,8 +156,9 @@
 </template>
 
 <script setup lang="ts">
-  import { toRef } from "vue";
+  import { Ref, computed, ref, toRef } from "vue";
   import Video from "./Video.vue";
+  import { useStore } from "vuex";
 
   const props = defineProps({
     store: {
@@ -109,11 +176,24 @@
   });
   const displayName = toRef(props, 'displayName');
   const channelId = toRef(props, 'channelId');
+  const mediaId : Ref<String> = ref(Math.floor(Math.random() * 100000).toString());
+  const sessionTypes : Array<any> = [{ name: "Start Broadcast", value: "start-broadcast"}, {name: "Watch Broadcast", value: "watch-broadcast"}];
+  const selectedSessionType: Ref<String> = ref(sessionTypes[0].value); 
+  const store = useStore();
 
-  const emit = defineEmits(['joinCall', 'changeCamera', 'changeMicrophone', 'changeSpeaker', 'changeChannel']);
+  const sessionType = computed(() => {
+    return store.state.sessionType || "";
+  })  
+  const emit = defineEmits(['startBroadcast','watchBroadcast', 'changeCamera', 'changeMicrophone', 'changeSpeaker', 'changeChannel']);
 
-  const joinCall = (event: any) => {
-    emit('joinCall', event);
+  const startSession = () => {
+    store.commit('setSessionType', selectedSessionType.value)
+  }
+  const startBroadcast = (event: any) => {
+    emit('startBroadcast', event);
+  }
+  const watchBroadcast = (event: any) => {
+    emit('watchBroadcast', event);
   }
   const changeCamera = (deviceId: String) => {
     emit('changeCamera', deviceId);
@@ -126,5 +206,8 @@
   }
   const changeChannel = (channelId: String) => {
     emit('changeChannel', channelId);
+  }
+  const changeMediaId = (mediaId: String) => {
+    store.commit('setMediaId', mediaId)
   }
 </script>

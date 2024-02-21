@@ -26,6 +26,8 @@ const store = createStore({
         localMedia: null,
         upstreamConnection: null,
         channelId: "",
+        mediaId: "",
+        sessionType: "",
         displayName: "",
         audioMuted: false,
         videoMuted: false,
@@ -49,6 +51,12 @@ const store = createStore({
       },
       setChannelId (state, channelId) {
         state.channelId = channelId
+      },
+      setMediaId (state, mediaId) {
+        state.mediaId = mediaId
+      },
+      setSessionType (state, sessionType) {
+        state.sessionType = sessionType
       },
       setDisplayName (state, displayName) {
         state.displayName = displayName

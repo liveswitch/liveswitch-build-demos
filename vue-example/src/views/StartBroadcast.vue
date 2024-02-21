@@ -1,13 +1,13 @@
 <template>
-    <InCall v-if="!mobile" :store="store" :remoteCounter="remoteCounter" :videoDimensions="videoDimensions" :downstreamConnections="downstreamConnections" @leaveCall="leaveCall" @change-camera="updateCamera" @change-microphone="updateMicrophone" @change-speaker="changeSpeaker" @sendChat="sendChat"/>
-    <InCallPortrait v-else-if="isPortrait" :store="store" :remoteCounter="remoteCounter" :currentTab="currentTab" :showLocal="showLocal" :pageNumber="pageNumber" :lastPage="lastPage" @leaveCall="leaveCall" @change-camera="updateCamera" @change-microphone="updateMicrophone" @change-speaker="changeSpeaker" @sendChat="sendChat" @prevPage="prevPage" @nextPage="nextPage" @switchTab="switchTab"/>
-    <InCallLandscape v-else :store="store" :remoteCounter="remoteCounter" :currentTab="currentTab" :showLocal="showLocal" :pageNumber="pageNumber" :lastPage="lastPage" @leaveCall="leaveCall" @change-camera="updateCamera" @change-microphone="updateMicrophone" @change-speaker="changeSpeaker" @sendChat="sendChat" @prevPage="prevPage" @nextPage="nextPage" @switchTab="switchTab"/>
+    <StartBroadcast v-if="!mobile" :store="store" :remoteCounter="remoteCounter" :videoDimensions="videoDimensions" :downstreamConnections="downstreamConnections" @leaveCall="leaveCall" @change-camera="updateCamera" @change-microphone="updateMicrophone" @change-speaker="changeSpeaker" @sendChat="sendChat"/>
+    <StartBroadcastPortrait v-else-if="isPortrait" :store="store" :remoteCounter="remoteCounter" :currentTab="currentTab" :showLocal="showLocal" :pageNumber="pageNumber" :lastPage="lastPage" @leaveCall="leaveCall" @change-camera="updateCamera" @change-microphone="updateMicrophone" @change-speaker="changeSpeaker" @sendChat="sendChat" @prevPage="prevPage" @nextPage="nextPage" @switchTab="switchTab"/>
+    <StartBroadcastLandscape v-else :store="store" :remoteCounter="remoteCounter" :currentTab="currentTab" :showLocal="showLocal" :pageNumber="pageNumber" :lastPage="lastPage" @leaveCall="leaveCall" @change-camera="updateCamera" @change-microphone="updateMicrophone" @change-speaker="changeSpeaker" @sendChat="sendChat" @prevPage="prevPage" @nextPage="nextPage" @switchTab="switchTab"/>
   </template>
   
   <script lang="ts" setup>
-    import InCall from '@/components/InCall.vue'
-    import InCallPortrait from '@/components/InCallPortrait.vue'
-    import InCallLandscape from '@/components/InCallLandscape.vue'
+    import StartBroadcast from '@/components/StartBroadcast.vue'
+    import StartBroadcastPortrait from '@/components/StartBroadcastPortrait.vue'
+    import StartBroadcastLandscape from '@/components/StartBroadcastLandscape.vue'
 
     import { useDisplay } from 'vuetify'
 
@@ -48,7 +48,7 @@
 
     // handler function for leave button
     async function leaveCall() {
-        await liveSwitchPlugin.disconnectFromMeeting(downstreamConnections.value, client, media);
+        // await liveSwitchPlugin.disconnectFromMeeting(downstreamConnections.value, client, media);
 
         media.destroy();
         store.commit('resetStore');
@@ -62,7 +62,7 @@
     function updateMicrophone (deviceId: string) {
       store.commit('changeMicrophone', deviceId)
     }
-    
+
     async function changeSpeaker (deviceId: string) {
         const connectionId = Object.keys(downstreamConnections.value)[0];
         const firstConnection: DownstreamData = downstreamConnections.value[connectionId];
@@ -70,16 +70,6 @@
         liveSwitchPlugin.updateSpeaker(downstreamConnections.value, newSpeakerDevice);
         store.commit('setActiveSpeakerDevice', deviceId)
     }
-
-    function closeRemoteConnectionHandler (connection: liveSwitch.SfuDownstreamConnection) {
-        const downstreamData = downstreamConnections.value[connection.getId()];
-        // delete the remote media
-        downstreamData.remoteMedia.destroy();
-        delete downstreamConnections.value[connection.getId()];
-        //update the video tile index counter
-        remoteCounter.value--;
-    }
-
     // send button handler
     function sendChat (chatMessage: string) {
         // check to make sure we will not send an empty message
@@ -88,19 +78,6 @@
         }
         // create message blob with necessary data
         liveSwitchPlugin.sendChat(channel, store.state.displayName, chatMessage);
-    }
-
-    function openDownStreamConnectionHandler (downstreamConnection: liveSwitch.SfuDownstreamConnection, remoteMedia: liveSwitch.RemoteMedia) {
-        let displayName = downstreamConnection.getRemoteConnectionInfo().getUserAlias();
-        if (mobile && remoteCounter.value === 1) {
-                store.commit('setVideoList', [{connection: downstreamConnection, media: remoteMedia, index: remoteCounter.value, displayName: displayName}])
-        }
-
-        downstreamConnections.value[downstreamConnection.getId()] = {connection: downstreamConnection, remoteMedia: remoteMedia, index: remoteCounter.value++, displayName: displayName};
-
-        changeSpeaker(store.state.activeSpeakerDevice);
-
-        liveSwitchPlugin.createDownStreamCloseHandler(downstreamConnection, closeRemoteConnectionHandler)
     }
     
     function chatHandler (message: string) {
@@ -124,9 +101,7 @@
             // get active channel we connected to from the client
             channel = await liveSwitchPlugin.getChannel(client);
             // connect my local media to the conection
-            liveSwitchPlugin.openSfuUpstreamConnection(store.state.localMedia, channel);
-            // connect to others via downstream connections
-            liveSwitchPlugin.createDownStreamOpenHandler(channel, openDownStreamConnectionHandler);
+            liveSwitchPlugin.openSfuUpstreamConnectionWithMediaId(store.state.mediaId, store.state.localMedia, channel);
         }
 
         store.commit('setLocalMedia', media)

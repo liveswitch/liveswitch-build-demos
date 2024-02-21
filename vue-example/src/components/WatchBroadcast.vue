@@ -12,16 +12,12 @@
                 <div class="channel-label">
                     Channel: {{ store.state.channelId }}
                 </div>
+                <div class="mediaid-label">
+                    Media Id: {{ store.state.mediaId }}
+                </div>
                 <v-btn class="leave-button liveswitch" @click="leaveCall">Leave Call</v-btn>
             </div>
             <div class="video-grid">
-                <Video
-                v-if="store.state.localMedia"
-                class="video"
-                :local-video="store.state.localMedia"
-                userName="Me"
-                :askHeight="videoDimensions"
-                :askWidth="videoDimensions"> </Video>
                 <Video
                 v-if="downstreamConnections"
                 class="video"
@@ -36,56 +32,6 @@
             </div>
         </div>
         <div class="right-column">
-            <div class="settings-menu-in-call">
-                <div class="basic-flex">
-                    <v-select
-                        label="Camera"
-                        class="margin input liveswitch"
-                        hide-details="auto"
-                        :items="store.state.cameraList"
-                        item-title="name"
-                        item-value="id"
-                        v-model="store.state.activeVideoDevice"
-                        @update:model-value="changeCamera"
-                    ></v-select>
-                    <v-btn
-                    class="margin button liveswitch"
-                    icon
-                    @click="store.commit('toggleLocalVideoMute')">
-                        <i class="center" :class="store.state.videoMuted ? 'icon-video-slash' : 'icon-video'"/>
-                    </v-btn>
-                </div>
-                <div class="basic-flex">
-                    <v-select
-                        label="Microphone"
-                        class="margin input liveswitch"
-                        hide-details="auto"
-                        :items="store.state.microphoneList"
-                        item-title="name"
-                        item-value="id"
-                        v-model="store.state.activeAudioDevice"
-                        @update:model-value="changeMicrophone"
-                    ></v-select>
-                    <v-btn
-                    class="margin button liveswitch"
-                    icon
-                    @click="store.commit('toggleLocalAudioMute')">
-                        <i class="center" :class="store.state.audioMuted ? 'icon-audio-mic-slash' : 'icon-audio-mic'"/>
-                    </v-btn>
-                </div>
-                <div class="basic-flex">
-                    <v-select
-                    label="Speaker"
-                    class="margin input liveswitch"
-                    hide-details="auto"
-                    :items="store.state.speakerList"
-                    item-title="name"
-                    item-value="id"
-                    v-model="store.state.activeSpeakerDevice"
-                    @update:model-value="changeSpeaker"
-                    ></v-select>
-                </div>
-            </div>
             <div class="chat-container">
                 <div class="chat-header">
                     <h2 class="margin">Chat</h2>
@@ -149,15 +95,6 @@
 
     const leaveCall = (event: any) => {
         emit('leaveCall', event);
-    }
-    const changeCamera = (deviceId: String) => {
-        emit('changeCamera', deviceId);
-    }
-    const changeMicrophone = (deviceId: String) => {
-        emit('changeMicrophone', deviceId);
-    }
-    const changeSpeaker = (deviceId: String) => {
-        emit('changeSpeaker', deviceId);
     }
     const sendChat = () => {
         emit('sendChat', chatMessage.value);

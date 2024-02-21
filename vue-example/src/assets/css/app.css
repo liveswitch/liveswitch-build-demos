@@ -65,7 +65,11 @@ i.center {
     width: 640px;
     height: 480px;
 }
-.join-button.liveswitch {
+.start-broadcast-button.liveswitch {
+    color: white;
+    background-color: blue;
+}
+.watch-broadcast-button.liveswitch {
     color: white;
     background-color: blue;
 }
@@ -260,7 +264,7 @@ video {
     height: 395px;
     overflow: scroll;
 }
-.channel-label {
+.channel-label, .mediaid-label {
     color: white;
     margin-top: 10px;
     font-size: 18px;
@@ -431,7 +435,7 @@ video {
         margin-right: 10px;
         max-width: 110px;
     }
-    .channel-label {
+    .channel-label,.mediaid-label {
         display: flex;
         justify-content: center;
         color: white;
@@ -453,7 +457,12 @@ video {
         margin-top: 0px;
         margin-bottom: 0px;
     }
-    .join-button.liveswitch {        
+    .start-broadcast-button.liveswitch {
+        color: white;
+        background-color: blue;
+        height: 30px;
+    }
+    .watch-broadcast-button.liveswitch {     
         color: white;
         background-color: blue;
         height: 30px;
@@ -600,7 +609,7 @@ video {
         margin-right: 10px;
         max-width: 80px;
     }
-    .channel-label {
+    .channel-label, .mediaid-label {
         display: flex;
         justify-content: center;
         color: white;

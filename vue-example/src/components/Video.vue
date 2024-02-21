@@ -134,7 +134,6 @@
                 for (let childIndex in videoContainer[0].childNodes) {
                     const child = videoContainer[0].childNodes[childIndex] as HTMLElement
                     if (child.classList?.contains("fm-video")) {
-                        console.log("Video already inserted");
                         return;
                     }
                 }
@@ -148,8 +147,7 @@
             else if (remoteMedia.value && props.index) {
                 // get UI element from media
                 videoNode = remoteMedia.value.getView();
-                let insertPosition = props.index;
-
+                let insertPosition = 0;
                 // make sure not to double insert a video
                 for (let childIndex in videoContainer[insertPosition].childNodes) {
                     const child = videoContainer[insertPosition].childNodes[childIndex] as HTMLElement

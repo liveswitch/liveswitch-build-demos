@@ -49,7 +49,7 @@ export default {
             }
         }
 
-        const openSfuUpstreamConnection = (localMedia: ls.LocalMedia, channel: ls.Channel) => {
+        const openSfuUpstreamConnectionWithMediaId = (mediaId: string, localMedia: ls.LocalMedia, channel: ls.Channel) => {
             // Create audio and video streams from local media.
             const audioStream = new ls.AudioStream(localMedia);
             const videoStream = new ls.VideoStream(localMedia);
@@ -62,7 +62,8 @@ export default {
             // Create a SFU upstream connection with local audio and video.
             const connection = channel.createSfuUpstreamConnection(
                 audioStream,
-                videoStream
+                videoStream,
+                mediaId,
             );
     
             // add logging for remote state
@@ -90,6 +91,28 @@ export default {
         }
 
         // handle setting up the downstream connection
+        const openSfuDownstreamConnectionWithMediaId = async (mediaId: string, channel: ls.Channel, callback: Function) => {
+            // Create remote media.
+            const remoteMedia = new ls.RemoteMedia();
+            const audioStream = new ls.AudioStream(remoteMedia);
+            const videoStream = new ls.VideoStream(remoteMedia);
+            let remoteCounter = 1;
+            
+            if (channel) {
+                // Create a SFU downstream connection with remote audio and video.
+                const connection: ls.SfuDownstreamConnection = channel.createSfuDownstreamConnection(
+                    mediaId,
+                    audioStream,
+                    videoStream
+                );
+
+                // open connection now that our handlers have been set
+                await connection.open();
+                if (callback) {
+                    callback(connection, remoteMedia);
+                }
+            }
+        };
         const openSfuDownstreamConnection = (remoteConnectionInfo: ls.ConnectionInfo, channel: ls.Channel) => {
             // Create remote media.
             const remoteMedia = new ls.RemoteMedia();
@@ -111,7 +134,6 @@ export default {
             }
             return [];
         };
-
         const createDownStreamCloseHandler = (connection: ls.SfuDownstreamConnection, callback: Function) => {
             connection.addOnStateChange((conn) => {
                 if (conn.getRemoteClosed()) {
@@ -187,9 +209,9 @@ export default {
             startLocalMedia, 
             registerClient, 
             getChannel, 
-            openSfuUpstreamConnection, 
-            createDownStreamOpenHandler, 
-            createDownStreamCloseHandler, 
+            createDownStreamOpenHandler,
+            openSfuUpstreamConnectionWithMediaId, 
+            openSfuDownstreamConnectionWithMediaId,  
             disconnectFromMeeting, 
             sendChat, 
             addIncomingChatHandler,

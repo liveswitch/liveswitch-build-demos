@@ -69,15 +69,6 @@
                         <div class="even-spacing">
                             <div class="video-container">
                                 <Video
-                                v-if="store.state.localMedia && showLocal"
-                                ask-height="235px"
-                                ask-width="320px"
-                                :maxLabelLength=7
-                                :local-video="store.state.localMedia"
-                                userName="Me"></Video>
-                            </div>
-                            <div class="video-container">
-                                <Video
                                 v-if="store.state.videoList"
                                 v-for="value in store.state.videoList"
                                 :remoteVideo="value.media"
@@ -160,10 +151,6 @@
         },
         currentTab: {
             type: String,
-            required: true
-        },
-        showLocal: {
-            type: Boolean,
             required: true
         },
         pageNumber: {
